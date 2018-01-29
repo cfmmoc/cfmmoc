@@ -1,3 +1,1 @@
-# cfmmoc for terrain renering library
-
-![LOGO](https://github.com/cfmmoc/cfmmoc/blob/master/cfmmoc.svg)
+# ![LOGO](https://github.com/cfmmoc/cfmmoc/blob/master/cfmmoc.svg) for terrain renering library
