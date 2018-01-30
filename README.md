@@ -5,7 +5,7 @@ Licensed under The GNU General Public License v3.0 (GPLv3)
 cfMMOC library is a terrain rendering framework on top of OGRE v1.9.
 
 ## Prerequisites
-install the following dependences for cfMMOC
+Install the following dependences for cfMMOC:
 
 ois-1.3.0-14.fc27.x86_64
 
