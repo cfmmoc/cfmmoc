@@ -1,8 +1,8 @@
-# ![cfMMOC LOGO](https://github.com/cfmmoc/cfmmoc/blob/master/cfmmoc.svg) library for terrain rendering
+# ![cfMMOC LOGO](https://github.com/cfmmoc/cfmmoc/blob/master/cfmmoc.svg) library for terrain rendering using OGRE
 Licensed under The GNU General Public License v3.0 (GPLv3)
 
 ## Overview
-cfMMOC library is a terrain rendering framework on top of OGRE v1.9.
+cfMMOC library is a planet-scale terrain rendering framework on top of OGRE v1.9.
 
 ## Prerequisites
 Install the following dependences (given versions are not mandatory) for cfMMOC:
