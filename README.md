@@ -19,6 +19,7 @@ poco-foundation-1.7.8p3-2.fc27.x86_64
 Install compiler and IDE:
 
 gcc-c++-7.2.1-2.fc27.x86_64
+
 codeblocks-16.01-12.fc27.x86_64
 
 ## Configuration
