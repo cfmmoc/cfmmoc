@@ -23,3 +23,5 @@ gcc-c++-7.2.1-2.fc27.x86_64
 codeblocks-16.01-12.fc27.x86_64
 
 ## Configuration
+
+Do NOT run cfMMOC on virtual machines.
