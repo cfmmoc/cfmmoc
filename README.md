@@ -27,3 +27,5 @@ codeblocks-16.01-12.fc27.x86_64
 ## Configuration
 
 Do NOT run cfMMOC on virtual machines.
+
+cfMMOC could fetch data from https://raw.githubusercontent.com/cfmmoc/cfmmoc-dataset-ll/master/ (ONLY for data connectivity and accessibility), but no real-time performace is guaranteed by using resources from this URLs.
