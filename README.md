@@ -30,7 +30,9 @@ Install compiler, IDE and dependences (given versions are not mandatory) for bui
 
 gcc-c++-7.2.1-2.fc27.x86_64
 
-codeblocks-16.01-12.fc27.x86_64
+poco-devel
+
+ois-devel
 
 ## Configuration
 
