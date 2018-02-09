@@ -11,9 +11,17 @@ Install the following dependences (given versions are not mandatory) for cfMMOC:
 
 ois-1.3.0-14.fc27.x86_64
 
+freeimage
+
+zziplib
+
 libcurl-7.55.1-8.fc27.x86_64
 
+libatomic
+
 libXaw-1.0.13-7.fc27.x86_64
+
+mesa-libGLU
 
 poco-foundation-1.7.8p3-2.fc27.x86_64
 
