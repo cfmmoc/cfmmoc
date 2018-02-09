@@ -34,6 +34,8 @@ poco-devel-1.7.8p3-2.fc27.x86_64
 
 ois-devel-1.3.0-14.fc27.x86_64
 
+libcurl-devel-7.55.1-8.fc27.x86_64
+
 ## Configuration
 
 Do NOT run cfMMOC on virtual machines.
