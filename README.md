@@ -26,7 +26,7 @@ mesa-libGLU-9.0.0-13.fc27.x86_64
 poco-foundation-1.7.8p3-2.fc27.x86_64
 
 ## Compilation
-Install compiler, IDE and dependences (given versions are not mandatory) :
+Install compiler, IDE and dependences (given versions are not mandatory) for building cfMMOC:
 
 gcc-c++-7.2.1-2.fc27.x86_64
 
