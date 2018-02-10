@@ -1,0 +1,13 @@
+times
+
+{
+
+       type              truetype
+
+       source           times.ttf
+
+       size               32
+
+       resolution      96
+
+}

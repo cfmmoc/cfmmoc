@@ -1,0 +1,38 @@
+material tb_terra_sph_complex
+{
+	technique
+	{
+		pass
+		{
+			ambient 1 1 1 1
+			cull_hardware none
+			lighting off
+			texture_unit
+			{
+				texture empty.png
+				tex_address_mode clamp
+			}
+		}
+
+	}
+
+}
+
+material tb_terra_sph_simple
+{
+	technique
+	{
+		pass
+		{
+			ambient 1 1 1 1
+			cull_hardware none
+			lighting off
+			texture_unit
+			{
+				colour_op_ex source1 src_manual src_current 1 1 1
+			}
+、		}
+
+	}
+
+}

@@ -1,0 +1,7 @@
+cfMMOC is a library for globe-scale terrain rendering using OGRE.
+Licensed under The GNU General Public License v3.0 (GPLv3)
+Any modification, re-utilization or copy of the source or binary format in other software or publications should mention a CITATION 
+(https://github.com/cfmmoc) of this library.
+
+Copyright (c) 2016-2018 by Authors (Jin Yan, Guanghong Gong, Ni Li and Luhao Xiao)
+
