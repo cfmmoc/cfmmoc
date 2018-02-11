@@ -49,4 +49,10 @@ Then run "make install", it will copy binary file to bin/ directory.
 
 Do NOT run cfMMOC on virtual machines.
 
-cfMMOC could fetch data from https://raw.githubusercontent.com/cfmmoc/cfmmoc-dataset-ll/master/***/*/*/*/* (NOT recommended, ONLY for data connectivity and accessibility), but no real-time performace is guaranteed by using resources from this URLs. Downloading dataset from https://github.com/cfmmoc/cfmmoc-dataset-ll to local storage is recommanded.
+Refer to this page, https://github.com/cfmmoc/cfmmoc-dataset-ll, for downloading and configuring dataset and data server.
+
+cfMMOC could also fetch data from https://raw.githubusercontent.com/cfmmoc/cfmmoc-dataset-ll/master/***/*/*/*/* (NOT recommended, ONLY for data connectivity and accessibility), but no real-time performace is guaranteed by using resources from this URLs. Downloading dataset from https://github.com/cfmmoc/cfmmoc-dataset-ll to local storage is recommanded.
+
+When data server is configured, change directory to bin/, run './cfMMOC' command, and select cfMMOC-back sample to run.
+
+Then, run './cfMMOC' command again, and select cfMMOC-fore sample to run.
