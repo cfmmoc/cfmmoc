@@ -41,7 +41,7 @@ libcurl-devel-7.55.1-8.fc27.x86_64
 
 Download the source and build cfMMOC as follows:
 
-Change directory to obj/, and run "make all" command to build cfMMOC.
+Change working directory to obj/, and run "make all" command to build cfMMOC.
 
 Then run "make install", it will copy binary file to bin/ directory.
 
@@ -53,7 +53,7 @@ Refer to this page, https://github.com/cfmmoc/cfmmoc-dataset-ll, for downloading
 
 cfMMOC could also fetch data from https://raw.githubusercontent.com/cfmmoc/cfmmoc-dataset-ll/master/***/*/*/*/* (NOT recommended, ONLY for data connectivity and accessibility), but no real-time performace is guaranteed by using resources from this URLs. Downloading dataset from https://github.com/cfmmoc/cfmmoc-dataset-ll to local storage is recommanded.
 
-When data server is configured, change directory to bin/, run './cfMMOC' command, and select cfMMOC-back sample to run.
+When data server is configured, change working directory to bin/, run './cfMMOC' command, and select cfMMOC-back sample to run.
 
 Then, run './cfMMOC' command again, and select cfMMOC-fore sample to run.
 
