@@ -6,6 +6,9 @@ Any modification, re-utilization or copy of the source or binary format in other
 ## Overview
 cfMMOC library is a planet-scale terrain rendering framework on top of OGRE v1.9.
 
+## Screenshot
+![screenshot](https://raw.githubusercontent.com/cfmmoc/cfmmoc/master/SNAP.png)
+
 ## Run-time Prerequisites
 Install the following dependences (given versions are not mandatory) for cfMMOC:
 
