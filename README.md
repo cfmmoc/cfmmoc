@@ -28,12 +28,6 @@ mesa-libGLU-9.0.0-13.fc27.x86_64
 
 poco-foundation-1.7.8p3-2.fc27.x86_64
 
-Download the source and build cfMMOC as follows:
-
-Change directory to obj/, and run "make all" command to build cfMMOC.
-
-Run "make install" will copy binary file to bin/ directory.
-
 ## Compilation
 Install compiler and dependences (given versions are not mandatory) for building cfMMOC:
 
@@ -44,6 +38,12 @@ poco-devel-1.7.8p3-2.fc27.x86_64
 ois-devel-1.3.0-14.fc27.x86_64
 
 libcurl-devel-7.55.1-8.fc27.x86_64
+
+Download the source and build cfMMOC as follows:
+
+Change directory to obj/, and run "make all" command to build cfMMOC.
+
+Then run "make install", it will copy binary file to bin/ directory.
 
 ## Configuration
 
