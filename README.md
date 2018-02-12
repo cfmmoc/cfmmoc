@@ -20,7 +20,7 @@ freeimage-3.17.0-12.fc27.x86_64
 
 zziplib-0.13.62-10.fc27.x86_64
 
-libcurl-7.55.1-8.fc27.x86_64
+libcurl-7.55.1-8.fc27.x86_64 for fetching data from server
 
 libatomic-7.2.1-2.fc27.x86_64
 
@@ -28,7 +28,7 @@ libXaw-1.0.13-7.fc27.x86_64
 
 mesa-libGLU-9.0.0-13.fc27.x86_64
 
-poco-foundation-1.7.8p3-2.fc27.x86_64
+poco-foundation-1.7.8p3-2.fc27.x86_64 for supporting multi-threading
 
 ## Compilation
 Install compiler and dependences (given versions are not mandatory) for building cfMMOC:
@@ -41,7 +41,7 @@ ois-devel-1.3.0-14.fc27.x86_64
 
 libcurl-devel-7.55.1-8.fc27.x86_64
 
-Download the source and build cfMMOC as follows:
+Download the source (https://github.com/cfmmoc/cfmmoc/archive/master.zip), extract it, and build cfMMOC as follows:
 
 Change working directory to obj/, and run "make all" command to build cfMMOC.
 
