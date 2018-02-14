@@ -53,6 +53,8 @@ Do NOT run cfMMOC on virtual machines.
 
 Refer to this page, https://github.com/cfmmoc/cfmmoc-dataset-ll, for downloading and configuring dataset and data server.
 
+Remote resource directory could be configured in bin/resources.cfg file, locate the line starting with cURL=http://, change resource directory there (further see troubleshooting for server accessibility).
+
 cfMMOC could also fetch data from https://raw.githubusercontent.com/cfmmoc/cfmmoc-dataset-ll/master/***/*/*/*/* (NOT recommended, ONLY for data connectivity and accessibility), but no real-time performace is guaranteed by using resources from  Internet URLs. Downloading dataset from https://github.com/cfmmoc/cfmmoc-dataset-ll to server on local storage is recommanded.
 
 When data server is configured, change working directory to bin/, run './cfMMOC' command, and select cfMMOC-back sample to run.
@@ -60,3 +62,7 @@ When data server is configured, change working directory to bin/, run './cfMMOC'
 Then, run './cfMMOC' command again, and select cfMMOC-fore sample to run.
 
 ## Troubleshooting
+
+If terrain tiles are not renderred in either back-end process or fore-end process --> check resource directory starting with cURL=http:// in bin/resources.cfg, access file http://localhost/com/u/s/s/t.mesh via web browser to check server accessibility. Note that a slash(/) is required at the end of that resource directory line.
+
+If other problem occurs, post an issue at https://github.com/cfmmoc/cfmmoc/issues/new.
