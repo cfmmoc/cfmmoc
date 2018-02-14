@@ -362,7 +362,7 @@ bool cfMMOCback::frameRenderingQueued(const Ogre::FrameEvent& evt)
         {
             int color = it->first;
             Ogre::String name = it->second;
-            mSharedSttVis->mVisible[mSharedSttVis->mLength] = mHashColor2Pixel[color] > 150;
+            mSharedSttVis->mVisible[mSharedSttVis->mLength] = mHashColor2Pixel[color] > 15;
             mSharedSttVis->mPixel[mSharedSttVis->mLength] = mHashColor2Pixel[color];
             strcpy(mSharedSttVis->mFilename[mSharedSttVis->mLength],
                 name.c_str());

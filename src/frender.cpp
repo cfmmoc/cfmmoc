@@ -13,7 +13,7 @@ cfMMOCfore::cfMMOCfore()
 	mPreparation = true;
 	mRenderTex = true;
 	mHideAABB = false;
-	mHideInvisible = false;
+	mHideInvisible = true;
 	mInitEye = Ogre::Vector3(3000000, 700000, 5800000);
 	mInitTarget = Ogre::Vector3(0, 0, 0);
 	mClipDist = Ogre::Vector2(100, 20000000);
@@ -27,6 +27,7 @@ cfMMOCfore::cfMMOCfore()
 
     mSharedMemFed = NULL;
 	mForeOver = false;
+	mTilesVisbleReg.mLength = 0;
 
 	curl_global_init(CURL_GLOBAL_DEFAULT);
 
