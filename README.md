@@ -14,7 +14,7 @@ Two-processes based framework
 
 Out-of-core rendering
 
-Terrain with Level-of-details
+Terrain with level-of-details
 
 Occlusion culling for invisibles
 
