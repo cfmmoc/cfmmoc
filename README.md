@@ -4,7 +4,23 @@ Licensed under The GNU General Public License v3.0 (GPLv3)
 Any modification, re-utilization or copy of the source or binary format in other software or publications should mention a CITATION of this library.
 
 ## Overview
-cfMMOC library is a planet-scale terrain rendering framework on top of OGRE v1.9.
+cfMMOC represents a consolidated framework of multi-resolution management and occlusion culling.
+
+cfMMOC library is a planet-scale out-of-core terrain rendering framework on top of OGRE v1.9.
+
+## Features
+
+Two-processes based framework
+
+Out-of-core rendering
+
+Terrain with Level-of-details
+
+Occlusion culling for invisibles
+
+Crack-avoidance
+
+Data fetching over networks
 
 ## Screenshot and Video
 ![screenshot](https://raw.githubusercontent.com/cfmmoc/cfmmoc/master/SNAP.png)
