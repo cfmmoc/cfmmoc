@@ -27,6 +27,8 @@ Data fetching over networks
 
 A demo video could be found at https://github.com/cfmmoc/cfmmoc-mics/blob/master/cfMMOC-short.mp4?raw=true.
 
+A longer version of video is here: https://www.youtube.com/watch?v=8BmP0gtMc1M.
+
 ## Run-time Prerequisites
 Install the following dependences (given versions are not mandatory) for cfMMOC:
 
