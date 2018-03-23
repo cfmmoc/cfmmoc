@@ -70,6 +70,16 @@ Datasets can be downloaded from: https://github.com/cfmmoc/cfmmoc-dataset-ll
 
 
 
+## System Specific Installation Instructions
+
+The following specifics augment the foregoing general instructions for rapid
+installation on the following systems:
+
+Install pre-requisites:
+
+    sudo apt install libpoco-dev libois-dev
+
+
 ## Running cfMMOC:
 
     cd bin/
@@ -91,7 +101,6 @@ cfMMOC could also fetch data from https://raw.githubusercontent.com/cfmmoc/cfmmo
 When data server is configured, change working directory to bin/, run `./cfMMOC` command, and select cfMMOC-back sample to run.
 
 Then, run `./cfMMOC` command again, and select cfMMOC-fore sample to run.
-
 
 
 ## Troubleshooting
