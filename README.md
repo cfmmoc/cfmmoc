@@ -105,6 +105,6 @@ Then, run `./cfMMOC` command again, and select cfMMOC-fore sample to run.
 
 ## Troubleshooting
 
-If terrain tiles are not renderred in either back-end process or fore-end process --> check resource directory starting with `cURL=http://` in `bin/resources.cfg`, access file http://localhost/com/u/s/s/t.mesh via web browser to check server accessibility. Note that a slash (`/`) is required at the end of that resource directory line.
+If terrain tiles are not renderred in either back-end process or fore-end process --> check resource directory starting with `cURL=http://` in `bin/resources.cfg`, access file http://localhost/com/u/s/s/t.mesh via web browser to check server accessibility. Note that a trailing slash (`/`) is required at the end of that resource directory line.
 
 If other problem occurs, post an issue at https://github.com/cfmmoc/cfmmoc/issues/new.
