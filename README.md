@@ -60,11 +60,12 @@ Download the source (https://github.com/cfmmoc/cfmmoc/archive/master.zip), extra
 
 After installing the prerequisites, perform the following:
 
+    mkdir obj 
     cd obj/
-    make all
-    make install
+    make all -f ../Makefile
+    make install -f ../Makefile
 
-Running `make install`, will copy the binary file to the `bin/` directory.
+Running `make install -f ../Makefile, will copy the binary file to the `bin/` directory.
 
 Datasets can be downloaded from: https://github.com/cfmmoc/cfmmoc-dataset-ll
 
