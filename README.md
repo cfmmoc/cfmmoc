@@ -65,7 +65,7 @@ After installing the prerequisites, perform the following:
     make all -f ../Makefile
     make install -f ../Makefile
 
-Running `make install -f ../Makefile, will copy the binary file to the `bin/` directory.
+Running `make install -f ../Makefile`, will copy the binary file to the `bin/` directory.
 
 Datasets can be downloaded from: https://github.com/cfmmoc/cfmmoc-dataset-ll
 
