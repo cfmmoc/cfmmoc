@@ -73,8 +73,12 @@ Datasets can be downloaded from: https://github.com/cfmmoc/cfmmoc-dataset-ll
 
 ## System Specific Installation Instructions
 
+Fedora is recommendation system for compiling and running cfMMOC.
+
 The following specifics augment the foregoing general instructions for rapid
 installation on the following systems:
+
+### Ubuntu:
 
 Install pre-requisites for run-time:
 
@@ -82,7 +86,7 @@ Install pre-requisites for run-time:
 
 Install pre-requisites for compiling:
 
-    sudo apt install libpoco-dev libois-dev libcurl3-dev
+    sudo apt install make g++ libpoco-dev libois-dev libcurl3-dev
 
 
 ## Running cfMMOC:
