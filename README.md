@@ -76,9 +76,13 @@ Datasets can be downloaded from: https://github.com/cfmmoc/cfmmoc-dataset-ll
 The following specifics augment the foregoing general instructions for rapid
 installation on the following systems:
 
-Install pre-requisites:
+Install pre-requisites for run-time:
 
-    sudo apt install libpoco-dev libois-dev
+    sudo apt install libzzip-0-13 libatomic1 libois-1.3.0v5 libfreeimage3 libpocofoundation48
+
+Install pre-requisites for compiling:
+
+    sudo apt install libpoco-dev libois-dev libcurl3-dev
 
 
 ## Running cfMMOC:
