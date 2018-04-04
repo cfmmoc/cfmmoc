@@ -88,7 +88,7 @@ Install pre-requisites for compiling:
 ## Running cfMMOC:
 
     cd bin/
-    ./cfMMOC #then start cfMMOC-back 
+    ./cfMMOC #then start cfMMOC-back, when running for the first time, do not select full screen mode, and 800x600 resolution is recommended
     ./cfMMOC #then start cfMMOC-fore
 
 
