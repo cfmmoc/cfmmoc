@@ -86,7 +86,7 @@ Install pre-requisites for run-time:
 
 Install pre-requisites for compiling:
 
-    `sudo apt install make g++ libpoco-dev libois-dev libcurl3-dev`
+    ```sudo apt install make g++ libpoco-dev libois-dev libcurl3-dev```
 
 
 ## Running cfMMOC:
