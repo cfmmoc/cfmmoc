@@ -1,3 +1,12 @@
+/**
+  cfMMOC library for terrain rendering using OGRE
+    Licensed under The GNU General Public License v3.0 (GPLv3)
+
+    Any modification, re-utilization or copy of the source or binary format in other software or publications should mention a CITATION of this library.
+
+  Copyright (c) 2016-2018 by Authors (Jin Yan, Guanghong Gong, Ni Li and Luhao Xiao)
+**/
+
 #ifndef COUNTINGTHREAD_H
 #define COUNTINGTHREAD_H
 
@@ -7,9 +16,23 @@
 
 using namespace Ogre;
 
+/**
+  @brief  A thread for counting each pixel of an image to obtain pixel coverage of each tile.
+**/
+
 class CountingThread : public Poco::Runnable
 {
     public:
+    /**
+    @remarks
+        initialize parameters
+    @par
+        x       image width
+        y       image height
+        split    threshold for splitting a tile
+        merge    threshold for merging four tiles
+        *rqts    a class encapsulated operation of restricted quadtrees
+    **/
         CountingThread(int x, int y, int split, int merge, libRQTS* rqts);
         virtual ~CountingThread();
         virtual void run();
