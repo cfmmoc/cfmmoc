@@ -1,10 +1,10 @@
 /**
-  cfMMOC library for terrain rendering using OGRE
+    `cfMMOC` library for terrain rendering using OGRE (https://github.com/cfmmoc/cfmmoc/)
     Licensed under The GNU General Public License v3.0 (GPLv3)
 
     Any modification, re-utilization or copy of the source or binary format in other software or publications should mention a CITATION of this library.
 
-  Copyright (c) 2016-2018 by Authors (Jin Yan, Guanghong Gong, Ni Li and Luhao Xiao)
+    Copyright (c) 2016-2018 by Authors (Jin Yan, Guanghong Gong, Ni Li and Luhao Xiao)
 **/
 
 #ifndef COUNTINGTHREAD_H
@@ -35,8 +35,22 @@ class CountingThread : public Poco::Runnable
     **/
         CountingThread(int x, int y, int split, int merge, libRQTS* rqts);
         virtual ~CountingThread();
+    /**
+    @remarks
+        main loop of the counting thread
+    **/
         virtual void run();
+    /**
+    @remark
+        copy image from external
+    @par
+        *texture  a point to an external image
+    **/
         void copyTexture(unsigned char *texture);
+    /**
+    @remark
+        return if or not the counting thread is idle
+    **/
         bool isSleeping();
         HashMap<unsigned int, unsigned int> getCountingResults(unsigned int *ret_count,
             unsigned int *ret_pixel, unsigned int *b_count);
