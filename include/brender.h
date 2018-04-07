@@ -29,7 +29,6 @@ struct SHARED_TILE_VIS
     bool mVisible[1024];
     char mFilename[1024][32];
     unsigned int mPixel[1024];
-    unsigned int mBlackCount;
     unsigned int mLength;
 };
 
@@ -69,8 +68,6 @@ protected:
 	void retrieveColor(Ogre::String filename);
 	void retrieveTexture();
 	unsigned char mColorTable[16];
-	unsigned int mNumAssignedColor;
-	unsigned int mMaxPixel;
 	HashMap<unsigned int, Ogre::String> mHashColor2Tile;
 	HashMap<unsigned int, Ogre::String> mAnotherHashColor2Tile;
 	HashMap<unsigned int, unsigned int> mHashColor2Pixel;
@@ -123,7 +120,6 @@ protected:
 
     unsigned int mVisCacheCount;
     unsigned int mVisDispCount;
-    unsigned int mBlackCount;
 
     libRQTS *mRQTS;
 };
