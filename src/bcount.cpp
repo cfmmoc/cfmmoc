@@ -91,7 +91,7 @@ HashMap<unsigned int, Ogre::String> CountingThread::getAnotherHashColor2Tile()
     update the sync status of fore-end process
     if mOverFromForeend == false, then update the status, and return true
 @par
-    over	sync status of fore-end process
+    over	the sync status of fore-end process
 **/
 bool CountingThread::updateOverState(bool over)
 {
