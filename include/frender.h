@@ -28,7 +28,6 @@ struct SHARED_TILE_VIS
     bool mVisible[1024];
     char mFilename[1024][32];
     unsigned int mPixel[1024];
-    unsigned int mBlackCount;
     unsigned int mLength;
 };
 
