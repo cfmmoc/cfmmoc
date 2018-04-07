@@ -1,5 +1,28 @@
+/**
+    `cfMMOC` library for terrain rendering using OGRE (https://github.com/cfmmoc/cfmmoc/)
+    Licensed under The GNU General Public License v3.0 (GPLv3)
+
+    Any modification, re-utilization or copy of the source or binary format in other software or publications should mention a CITATION of this library.
+
+    Copyright (c) 2016-2018 by Authors (Jin Yan, Guanghong Gong, Ni Li and Luhao Xiao)
+**/
+
+/**
+  @brief  A thread for counting each pixel of an image to obtain pixel coverage of each tile.
+**/
+
 #include "bcount.h"
 
+/**
+@remarks
+    initialize parameters, allocate memory
+@par
+    x       image width
+    y       image height
+    split    threshold for splitting a tile
+    merge    threshold for merging four tiles
+    *rqts    a class encapsulated operation of restricted quadtrees
+**/
 CountingThread::CountingThread(int x, int y, int split, int merge, libRQTS* rqts) : Runnable()
 {
     mX = x;
@@ -17,6 +40,12 @@ CountingThread::~CountingThread()
     delete [] mBackMemTex;
 }
 
+/**
+@remark
+    copy image from external
+@par
+    *texture  a point to an external image
+**/
 void CountingThread::copyTexture(unsigned char *texture)
 {
     {
@@ -25,25 +54,45 @@ void CountingThread::copyTexture(unsigned char *texture)
     }
 }
 
+/**
+@remark
+    return if or not the counting thread is idle
+    if mSleeping == true or mOverFromForeend == false 
+    (mOverFromForeend indicates sync status of fore-end rendering process), 
+    then return true
+**/
 bool CountingThread::isSleeping()
 {
     return mSleeping || !mOverFromForeend;
 }
 
-HashMap<unsigned int, unsigned int> CountingThread::getCountingResults(unsigned int *ret_count,
-    unsigned int *ret_pixel, unsigned int *b_count)
+/**
+@remark
+    return counting results
+    mHashColor2Pixel represents a map from color for a given tile to pixel coverage of that tile
+**/
+HashMap<unsigned int, unsigned int> CountingThread::getCountingResults()
 {
-    *ret_count = mHashColor2Tile.size();
-    *ret_pixel = mMaxPixel;
-    *b_count = mBlackCount;
     return mHashColor2Pixel;
 }
 
+/**
+@remark
+    return a copy of map from color to tile name in string
+    this map is maintained in this thread, the copy of the map is used externally
+**/
 HashMap<unsigned int, Ogre::String> CountingThread::getAnotherHashColor2Tile()
 {
     return mHashColor2Tile;
 }
 
+/**
+@remark
+    update the sync status of fore-end process
+    if mOverFromForeend == false, then update the status, and return true
+@par
+    over	sync status of fore-end process
+**/
 bool CountingThread::updateOverState(bool over)
 {
     bool updated = false;
@@ -55,13 +104,23 @@ bool CountingThread::updateOverState(bool over)
     return updated;
 }
 
-void CountingThread::fillinHashMaps(HashMap<unsigned int, Ogre::String> hct)//,
+/**
+@remark
+    sync the map from color to tile from main thread
+@par
+    hct	the map from color to tile in main thread
+**/
+void CountingThread::fillinHashMaps(HashMap<unsigned int, Ogre::String> hct)
 {
     {
         mHashColor2Tile = hct;
     }
 }
 
+/**
+@remark
+    count each pixel to obtain pixel coverage of each tile
+**/
 void CountingThread::countingTexture()
 {
     unsigned char r,g,b;
@@ -72,6 +131,11 @@ void CountingThread::countingTexture()
 	mHashTiles2Pixel.clear();
 	mHashTiles2Count.clear();
 
+	/**
+	    traverse each pixel, obtain its r,g,b value, 
+	    get its corresponding id via a predefined map function from r,g,b to an integer, 
+	    then accumulate the pixel count for given color
+	**/
 	for (unsigned int y = 0; y < mY; y++)
 	{
 		for (unsigned int x = 0; x < mX; x++)
@@ -85,6 +149,16 @@ void CountingThread::countingTexture()
 
 		}
 	}
+	/**
+	    traverse each predefined color, 
+	    set the result of pixel counting to mHashColor2Pixel, 
+	    mHashColor2Pixel is a map from predefined color to the result of pixel counting, 
+	    get the parent of the tile corresponding to given predefined color, 
+	    accumlate the number of pixels to mHashTiles2Pixel, 
+	    mHashTiles2Pixel is a map from tile (actually, the parent tile) to the result of pixel counting, 
+	    plus one to mHashTiles2Count, 
+	    mHashTiles2Count is a map form tile (actually, the parent tile) to the number of children of that tile
+	**/
 	mBlackCount = temp[4095];
 	for (unsigned int num = 0; num < 4095; num++)
 	{
@@ -97,18 +171,22 @@ void CountingThread::countingTexture()
 				tile.erase(tile.end() - 1);
 				if (tile != "")
 				{
-                    tile.erase(tile.end() - 1);
-                    if (tile != "")
-                    {
-                        mHashTiles2Pixel[tile] += temp[num];
-                        mHashTiles2Count[tile]++;
-                    }
+                    			tile.erase(tile.end() - 1);
+                    			if (tile != "")
+                    			{
+                        			mHashTiles2Pixel[tile] += temp[num];
+                        			mHashTiles2Count[tile]++;
+                    			}
 				}
 			}
 		}
 	}
 }
 
+/**
+@remark
+    find the maximum pixel coverage of tile
+**/
 Ogre::String CountingThread::findMaxTile4Split()
 {
     bool found = false;
@@ -124,7 +202,7 @@ Ogre::String CountingThread::findMaxTile4Split()
 			HashMap<unsigned int, Ogre::String>::iterator iter = mHashColor2Tile.find(color);
 			if (iter != mHashColor2Tile.end() && iter->second.length() < 10)
 			{
-                Ogre::String str = iter->second;
+                		Ogre::String str = iter->second;
 				{
 					found = true;
 					if (count > found_count)
@@ -142,6 +220,11 @@ Ogre::String CountingThread::findMaxTile4Split()
 	return found_tile;
 }
 
+/**
+@remark
+    find tiles whose pixel coverage is less than a given threashold, 
+    and to guarantee that the number of children of found tiles must be 4
+**/
 std::vector<Ogre::String> CountingThread::findTiles4Merge()
 {
     std::vector<Ogre::String> found_tiles;
@@ -154,13 +237,17 @@ std::vector<Ogre::String> CountingThread::findTiles4Merge()
 		{
 			if (count < mMergeThresh && mHashTiles2Count[tile] == 4)
 			{
-					found_tiles.push_back(tile);
+				found_tiles.push_back(tile);
 			}
 		}
 	}
 	return found_tiles;
 }
 
+/**
+@remarks
+    main loop of the counting thread
+**/
 void CountingThread::run()
 {
     while(1)
@@ -177,13 +264,13 @@ void CountingThread::run()
             std::vector<Ogre::String> tiles2 = findTiles4Merge();
 
             if (!tiles2.empty() && mRQTS->isdone())
-			{
+            {
                 mRQTS->checkmerge(tiles2);
-			}
-			if (tile1 != "" && mRQTS->isdone())
-			{
-				mRQTS->checksplit(tile1);
-			}
+            }
+            if (tile1 != "" && mRQTS->isdone())
+            {
+		mRQTS->checksplit(tile1);
+            }
             mOverFromForeend = false;
             mSleeping = true;
         }
