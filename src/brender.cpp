@@ -30,8 +30,6 @@ cfMMOCback::cfMMOCback()
 	mSplitThresh = 6000;
 	mMergeThresh = 2000;
 
-	mNumAssignedColor = 0;
-
 	mSharedMemCam = NULL;
 
 	mSharedMemVis = NULL;
@@ -398,8 +396,7 @@ bool cfMMOCback::frameRenderingQueued(const Ogre::FrameEvent& evt)
             {
                 if (mCountingWorker->isSleeping())
                 {
-                    mHashColor2Pixel = mCountingWorker->getCountingResults(&mNumAssignedColor,
-                        &mMaxPixel, &mBlackCount);
+                    mHashColor2Pixel = mCountingWorker->getCountingResults();
                     mAnotherHashColor2Tile = mCountingWorker->getAnotherHashColor2Tile();
                     mCountingWorker->fillinHashMaps(mHashColor2Tile);
                     if (mCountingWorker->updateOverState(mOverFromForeend))
