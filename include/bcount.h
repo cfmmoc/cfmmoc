@@ -25,7 +25,7 @@ class CountingThread : public Poco::Runnable
     public:
     /**
     @remarks
-        initialize parameters
+        initialize parameters, allocate memory
     @par
         x       image width
         y       image height
@@ -52,13 +52,45 @@ class CountingThread : public Poco::Runnable
         return if or not the counting thread is idle
     **/
         bool isSleeping();
-        HashMap<unsigned int, unsigned int> getCountingResults(unsigned int *ret_count,
-            unsigned int *ret_pixel, unsigned int *b_count);
+    /**
+    @remark
+        return counting results
+    **/
+        HashMap<unsigned int, unsigned int> getCountingResults();
+    /**
+    @remark
+        return a copy of map from color to tile name in string
+    **/
         HashMap<unsigned int, Ogre::String> getAnotherHashColor2Tile();
-        void fillinHashMaps(HashMap<unsigned int, Ogre::String> hct);//,
+    /**
+    @remark
+        update the sync status of fore-end process
+    @par
+        over	sync status of fore-end process
+    **/
         bool updateOverState(bool over);
+    /**
+    @remark
+        sync the map from color to tile from main thread
+    @par
+        hct	the map from color to tile in main thread
+    **/
+        void fillinHashMaps(HashMap<unsigned int, Ogre::String> hct);
+    /**
+    @remark
+        count each pixel to obtain pixel coverage of each tile
+    **/
         void countingTexture();
+    /**
+    @remark
+        find the maximum pixel coverage of tile
+    **/
         Ogre::String findMaxTile4Split();
+    /**
+    @remark
+        find tiles whose pixel coverage is less than a given threashold, 
+        and to guarantee that the number of children of found tiles must be 4
+ **/
         std::vector<Ogre::String> findTiles4Merge();
     protected:
     private:
@@ -68,14 +100,12 @@ class CountingThread : public Poco::Runnable
         bool mSleeping;
         int mSplitThresh;
         int mMergeThresh;
-        int mMaxPixel;
         HashMap<unsigned int, Ogre::String> mHashColor2Tile;
         HashMap<unsigned int, unsigned int> mHashColor2Pixel;
         HashMap<Ogre::String, unsigned int> mHashTiles2Pixel;
         HashMap<Ogre::String, unsigned int> mHashTiles2Count;
         bool mOverFromForeend;
 
-        unsigned int mBlackCount;
         libRQTS* mRQTS;
 
 };
