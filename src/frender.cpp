@@ -25,7 +25,7 @@ cfMMOCfore::cfMMOCfore()
 
 	mSharedMemVis = NULL;
 
-    mSharedMemFed = NULL;
+	mSharedMemFed = NULL;
 	mForeOver = false;
 	mTilesVisbleReg.mLength = 0;
 
@@ -152,7 +152,7 @@ void cfMMOCfore::unloadTile(Ogre::String filename, bool full)
 	mSceneMgr->destroySceneNode(filename);
 	mSceneMgr->destroyEntity(filename);
 	MeshPtr pMesh;
-    ResourcePtr pRes;
+	ResourcePtr pRes;
 	if (full)
 	{
         pMesh = static_cast<MeshPtr>(MeshManager::getSingleton().getByName(
