@@ -86,14 +86,13 @@ protected:
 	Ogre::Real mBackFovY;
 
 	BBackLoadThread* mBackThread;
-	bool mPreparation, mBackFramework, mBackRender, mRenderTex;
+	bool mPreparation, mBackFramework, mBackRender;
 	Ogre::Vector3 mInitEye, mInitTarget;
 	Ogre::Vector2 mClipDist;
 	Ogre::Vector2 mBackResolution;
 	std::vector<Ogre::String> mPreparedTiles;
 	std::vector<Ogre::String> mRenderedTiles;
 	std::vector<Ogre::String> mUnloadedTiles;
-	Ogre::String mTextureExtension;
 	Ogre::LoggingLevel mLoggingLevel;
 	OgreBites::CameraStyle mCameraStyle;
 	Ogre::Vector3 mYawAxis;
