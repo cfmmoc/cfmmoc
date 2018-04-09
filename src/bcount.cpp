@@ -157,7 +157,7 @@ void CountingThread::countingTexture()
 	    accumlate the number of pixels to mHashTiles2Pixel, 
 	    mHashTiles2Pixel is a map from tile (actually, the parent tile) to the result of pixel counting, 
 	    plus one to mHashTiles2Count, 
-	    mHashTiles2Count is a map form tile (actually, the parent tile) to the number of children of that tile
+	    mHashTiles2Count is a map form tile (actually, the parent tile) to the number of children (in the scene) of that tile
 	**/
 	mBlackCount = temp[4095];
 	for (unsigned int num = 0; num < 4095; num++)
@@ -189,9 +189,14 @@ void CountingThread::countingTexture()
 **/
 Ogre::String CountingThread::findMaxTile4Split()
 {
-    bool found = false;
+    	bool found = false;
 	Ogre::String found_tile = "";
 	unsigned int found_count = 0;
+	/**
+		traverse each predefined color, 
+		obtain the pixel coverage for given color, 
+		compare coverages and find out the maximum of coverage among all tiles
+	**/
 	for (HashMap<unsigned int, unsigned int>::iterator it = mHashColor2Pixel.begin();
 		it != mHashColor2Pixel.end(); it ++)
 	{
@@ -200,6 +205,10 @@ Ogre::String CountingThread::findMaxTile4Split()
 		if (color != 0 && count > 0)
 		{
 			HashMap<unsigned int, Ogre::String>::iterator iter = mHashColor2Tile.find(color);
+			/**
+				string length of tile's name is less than 10
+				means the maximum level of tile is 5
+			**/
 			if (iter != mHashColor2Tile.end() && iter->second.length() < 10)
 			{
                 		Ogre::String str = iter->second;
@@ -216,7 +225,7 @@ Ogre::String CountingThread::findMaxTile4Split()
 		}
 	}
 	if (found_count < mSplitThresh)
-        found_tile = "";
+        	found_tile = "";
 	return found_tile;
 }
 
@@ -227,7 +236,7 @@ Ogre::String CountingThread::findMaxTile4Split()
 **/
 std::vector<Ogre::String> CountingThread::findTiles4Merge()
 {
-    std::vector<Ogre::String> found_tiles;
+    	std::vector<Ogre::String> found_tiles;
 	for (HashMap<Ogre::String, unsigned int>::iterator it = mHashTiles2Pixel.begin();
 		it != mHashTiles2Pixel.end(); it ++)
 	{
@@ -252,13 +261,23 @@ void CountingThread::run()
 {
     while(1)
     {
+	/**
+	    to sleep for a period of time
+	**/
         if (mSleeping || !mOverFromForeend)
         {
             Poco::Thread::sleep(50);
         }
+	/**
+	    count pixel coverage of tiles, 
+	    then find out the tile with maximum coverage, and all tiles whose satisfy merging threshold
+	    if there is/are tiles to merge and mRQTS is idle, 
+	    then check the mergiblity of all tiles whose satisfy merging threshold
+	    if there is a tile to split and mRQTS is idle, 
+	    then check the splittability of the tile with maximum coverage
+	**/
         else
         {
-            mTimer.reset();
             countingTexture();
             Ogre::String tile1 = findMaxTile4Split();
             std::vector<Ogre::String> tiles2 = findTiles4Merge();
