@@ -60,10 +60,10 @@ Download the source (https://github.com/cfmmoc/cfmmoc/archive/master.zip), extra
 
 After installing the prerequisites, perform the following:
 
-    mkdir obj 
-    cd obj/
-    make all -f ../Makefile
-    make install -f ../Makefile
+	mkdir obj 
+	cd obj/
+	make all -f ../Makefile
+	make install -f ../Makefile
 
 Running `make install -f ../Makefile`, will copy the binary file to the `bin/` directory.
 
