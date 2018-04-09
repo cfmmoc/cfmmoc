@@ -159,7 +159,6 @@ void CountingThread::countingTexture()
 	    plus one to mHashTiles2Count, 
 	    mHashTiles2Count is a map form tile (actually, the parent tile) to the number of children (in the scene) of that tile
 	**/
-	mBlackCount = temp[4095];
 	for (unsigned int num = 0; num < 4095; num++)
 	{
 		{
@@ -217,7 +216,6 @@ Ogre::String CountingThread::findMaxTile4Split()
 					if (count > found_count)
 					{
 						found_count = count;
-						mMaxPixel = count;
 						found_tile = iter->second;
 					}
 				}
