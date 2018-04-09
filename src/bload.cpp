@@ -12,9 +12,14 @@
   @brief  A class for fetch tile from server in back-end thread.
 **/
 
+/**
+@remarks
+initialize parameters
+@par
+meshFD		folder name for simplified mesh
+**/
 BBackLoadThread::BBackLoadThread(Ogre::String meshFD)
 {
-	mLoadType = 3;
 	mSimMeshFolder = meshFD;
 }
 
@@ -23,23 +28,29 @@ BBackLoadThread::~BBackLoadThread()
 
 }
 
+/**
+@remark
+	fire a request to back-end thread
+	create mesh resource, prepare/load it, and store the corresponding request ticket to mTicketsMesh and mTicketFilename
+@par
+	reqname		file name of a tile
+	preparation	indicate if request is prepared in back-end thread
+**/
 void BBackLoadThread::fireRequestByName(Ogre::String reqname, bool preparation)
 {
-		Ogre::BackgroundProcessTicket t0, t1, t2;
-		Ogre::String dirname, filename, purefilename, serverfilename;
-
+	Ogre::BackgroundProcessTicket t1;
+	Ogre::String dirname, filename, purefilename, serverfilename;
 		filename = replacefile(reqname) + Ogre::String(".mesh");
-        	serverfilename = mSimMeshFolder + replacefile(reqname);
-		MeshPtr pMesh = static_cast<MeshPtr>(MeshManager::getSingleton().create(serverfilename + Ogre::String(".mesh"),
-            		ResourceGroupManager::INTERNAL_RESOURCE_GROUP_NAME));
-		pMesh->setBackgroundLoaded(true);
-		if (preparation)
-			t1 = ResourceBackgroundQueue::getSingleton().prepare("Mesh", pMesh->getName(), ResourceGroupManager::INTERNAL_RESOURCE_GROUP_NAME, false, 0, 0, 0);
-		else
-			t1 = ResourceBackgroundQueue::getSingleton().load("Mesh", pMesh->getName(), ResourceGroupManager::INTERNAL_RESOURCE_GROUP_NAME, false, 0, 0, 0);
-		mTicketsMesh.push_back(t1);
-		mTicketFilename[t1] = reqname;
-
+       	serverfilename = mSimMeshFolder + replacefile(reqname);
+	MeshPtr pMesh = static_cast<MeshPtr>(MeshManager::getSingleton().create(serverfilename + Ogre::String(".mesh"),
+           	ResourceGroupManager::INTERNAL_RESOURCE_GROUP_NAME));
+	pMesh->setBackgroundLoaded(true);
+	if (preparation)
+		t1 = ResourceBackgroundQueue::getSingleton().prepare("Mesh", pMesh->getName(), ResourceGroupManager::INTERNAL_RESOURCE_GROUP_NAME, false, 0, 0, 0);
+	else
+		t1 = ResourceBackgroundQueue::getSingleton().load("Mesh", pMesh->getName(), ResourceGroupManager::INTERNAL_RESOURCE_GROUP_NAME, false, 0, 0, 0);
+	mTicketsMesh.push_back(t1);
+	mTicketFilename[t1] = reqname;
 }
 
 void BBackLoadThread::operationCompleted(BackgroundProcessTicket ticket, const BackgroundProcessResult& result)
@@ -47,73 +58,44 @@ void BBackLoadThread::operationCompleted(BackgroundProcessTicket ticket, const B
 
 }
 
+/**
+@remark
+	return tiles which is already fetched
+	traverse all tickets, check if the corresponding request is fetched
+	if fetched, remove ticket from mTicketsMesh and mTicketFilename, and return tiles 
+**/
 std::vector<Ogre::String> BBackLoadThread::getLoadedFilename()
 {
 	std::vector<Ogre::String> ret;
 
-	switch (mLoadType)
+	if (mTicketsMesh.size() > 0)
 	{
-	case 1:
-		if (mTicketsTex.size() > 0)
+		for (int i = 0; i < mTicketsMesh.size(); i++)
 		{
-			for (int i = 0; i < mTicketsTex.size(); i++)
+			Ogre::BackgroundProcessTicket t1 = mTicketsMesh[i];
+			if (t1 != 0 && ResourceBackgroundQueue::getSingleton().isProcessComplete(t1))
 			{
-				Ogre::BackgroundProcessTicket ticket = mTicketsTex[i];
-				if (ticket != 0 && ResourceBackgroundQueue::getSingleton().isProcessComplete(ticket))
+				std::map<Ogre::BackgroundProcessTicket, Ogre::String>::iterator iter = mTicketFilename.find(t1);
+				if (iter != mTicketFilename.end())
 				{
-					mTicketsTex[i] = 0;
-				}
-			}
-		}
-		break;
-	case 2:
-		if (mTicketsMesh.size() > 0)
-		{
-			for (int i = 0; i < mTicketsMesh.size(); i++)
-			{
-				Ogre::BackgroundProcessTicket ticket = mTicketsMesh[i];
-				if (ticket != 0 && ResourceBackgroundQueue::getSingleton().isProcessComplete(ticket))
-				{
+					Ogre::String filename = (*iter).second;
+					ret.push_back(filename);
+						MeshPtr pMesh = static_cast<MeshPtr>(MeshManager::getSingleton().getByName(
+						mSimMeshFolder + replacefile(filename) + Ogre::String(".mesh"), ResourceGroupManager::INTERNAL_RESOURCE_GROUP_NAME));
+					pMesh->setBackgroundLoaded(false);
+					mTicketFilename.erase(iter);
 					mTicketsMesh[i] = 0;
 				}
 			}
 		}
-		break;
-	case 3:
-		if (mTicketsMesh.size() > 0)
-		{
-			for (int i = 0; i < mTicketsMesh.size(); i++)
-			{
-				Ogre::BackgroundProcessTicket t1 = mTicketsMesh[i];
-				bool check;
-				{
-					check = (t1 != 0 &&
-						ResourceBackgroundQueue::getSingleton().isProcessComplete(t1));
-				}
-				if (check)
-				{
-					std::map<Ogre::BackgroundProcessTicket, Ogre::String>::iterator iter = mTicketFilename.find(t1);
-					if (iter != mTicketFilename.end())
-					{
-						Ogre::String filename = (*iter).second;
-						ret.push_back(filename);
-
-						MeshPtr pMesh = static_cast<MeshPtr>(MeshManager::getSingleton().getByName(
-							mSimMeshFolder + replacefile(filename) + Ogre::String(".mesh"), ResourceGroupManager::INTERNAL_RESOURCE_GROUP_NAME));
-						pMesh->setBackgroundLoaded(false);
-
-						mTicketFilename.erase(iter);
-						mTicketsMesh[i] = 0;
-					}
-				}
-			}
-		}
-		break;
 	}
-
 	return ret;
 }
 
+/**
+@remark
+	return true if fetch queue is empty
+**/
 bool BBackLoadThread::isQueueEmpty()
 {
 	return mTicketFilename.empty();
