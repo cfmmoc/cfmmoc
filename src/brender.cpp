@@ -13,7 +13,6 @@ cfMMOCback::cfMMOCback()
 	mBackWindow = 0;
 
 	mInitLoadOver = false;
-	mRenderTex = false;
 	mPreparation = true;
 	mBackFramework = true;
 	mRetrieveTex = true;
@@ -100,9 +99,9 @@ void cfMMOCback::checkLoadReq()
     Ogre::String name = mRQTS->checkfile();
     if (!name.empty())
     {
-        mBackThread->fireRequestByName(name, mPreparation, mRenderTex);
+        mBackThread->fireRequestByName(name, mPreparation);
     }
-            std::vector<Ogre::String> filelist = mBackThread->getLoadedFilename(mRenderTex);
+            std::vector<Ogre::String> filelist = mBackThread->getLoadedFilename();
 			std::vector<Ogre::String>::iterator iter;
 			for (iter = filelist.begin(); iter != filelist.end(); iter++)
 			{
@@ -198,12 +197,6 @@ void cfMMOCback::loadTile(Ogre::String filename)
 	MeshPtr pMesh = static_cast<MeshPtr>(MeshManager::getSingleton().getByName(
 		mSimMeshFolder + replacefile(filename) + Ogre::String(".mesh"), ResourceGroupManager::INTERNAL_RESOURCE_GROUP_NAME));
 	pMesh->load();
-	if (mRenderTex)
-	{
-		TexturePtr pTex = static_cast<TexturePtr>(TextureManager::getSingleton().getByName(
-			filename + mTextureExtension, ResourceGroupManager::INTERNAL_RESOURCE_GROUP_NAME));
-		pTex->load();
-	}
 }
 
 void cfMMOCback::unloadBackTile(Ogre::String filename)
@@ -452,7 +445,7 @@ bool cfMMOCback::frameRenderingQueued(const Ogre::FrameEvent& evt)
 		}
 		else
 		{
-			std::vector<Ogre::String> filelist = mBackThread->getLoadedFilename(mRenderTex);
+			std::vector<Ogre::String> filelist = mBackThread->getLoadedFilename();
 			std::vector<Ogre::String>::iterator iter;
 			for (iter = filelist.begin(); iter != filelist.end(); iter++)
 			{
@@ -574,12 +567,12 @@ void cfMMOCback::setupContent()
 
 	mBackThread = new BBackLoadThread(mTextureExtension, mSimMeshFolder);
 
-	mBackThread->fireRequestByName(Ogre::String("u"), mPreparation, mRenderTex);
-	mBackThread->fireRequestByName(Ogre::String("v"), mPreparation, mRenderTex);
-	mBackThread->fireRequestByName(Ogre::String("w"), mPreparation, mRenderTex);
-	mBackThread->fireRequestByName(Ogre::String("x"), mPreparation, mRenderTex);
-	mBackThread->fireRequestByName(Ogre::String("y"), mPreparation, mRenderTex);
-	mBackThread->fireRequestByName(Ogre::String("z"), mPreparation, mRenderTex);
+	mBackThread->fireRequestByName(Ogre::String("u"), mPreparation);
+	mBackThread->fireRequestByName(Ogre::String("v"), mPreparation);
+	mBackThread->fireRequestByName(Ogre::String("w"), mPreparation);
+	mBackThread->fireRequestByName(Ogre::String("x"), mPreparation);
+	mBackThread->fireRequestByName(Ogre::String("y"), mPreparation);
+	mBackThread->fireRequestByName(Ogre::String("z"), mPreparation);
 
     mCamera->setFixedYawAxis(false);
     mCamera->setNearClipDistance(mClipDist.x);
