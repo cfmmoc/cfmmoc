@@ -21,7 +21,7 @@ public:
     	@remarks
         	initialize parameters
     	@par
-		meshFD		folder name for simplified mesh 
+		meshFD		folder name for simplified mesh
     	**/
 	BBackLoadThread(Ogre::String meshFD);
 	~BBackLoadThread();
@@ -31,7 +31,7 @@ public:
 		fire a request to back-end thread
 	@par
 		reqname		file name of a tile
-		preparation	indicate if request is prepared in back-edn thread
+		preparation	indicate if request is prepared in back-end thread
 	**/
 	void fireRequestByName(Ogre::String reqname, bool preparation);
 	void operationCompleted(BackgroundProcessTicket ticket, const BackgroundProcessResult& result);
@@ -47,12 +47,10 @@ public:
 	bool isQueueEmpty();
 
 protected:
-	unsigned int mLoadType;
-	Ogre::StringVector mLoadList;
+	// a map from request ticket to tile's name
 	std::map<Ogre::BackgroundProcessTicket, Ogre::String> mTicketFilename;
-	std::vector<Ogre::BackgroundProcessTicket> mTicketsBackMesh;
+	// a vector of all tickets
 	std::vector<Ogre::BackgroundProcessTicket> mTicketsMesh;
-	std::vector<Ogre::BackgroundProcessTicket> mTicketsTex;
-	Ogre::String mTextureExtension;
+	// folder name for simplified mesh
 	Ogre::String mSimMeshFolder;
 };
