@@ -90,22 +90,31 @@ class CountingThread : public Poco::Runnable
     @remark
         find tiles whose pixel coverage is less than a given threashold, 
         and to guarantee that the number of children of found tiles must be 4
- **/
+    **/
         std::vector<Ogre::String> findTiles4Merge();
     protected:
     private:
-        Ogre::Timer mTimer;
+        // memory to store image for pixel conuting
         unsigned char *mBackMemTex;
+        // mX = image width, mY = and height
         unsigned int mX, mY;
+        // indicating if this thread is idle
         bool mSleeping;
+        // splitting threshold in pixel
         int mSplitThresh;
+        // merging threadhold in pixel
         int mMergeThresh;
+        // a map from predefined color to tile's name in string
         HashMap<unsigned int, Ogre::String> mHashColor2Tile;
+        // a map from predefined color to pixel coverage in pixel
         HashMap<unsigned int, unsigned int> mHashColor2Pixel;
+        // a map from a tile to summed pixel coverage of its children
         HashMap<Ogre::String, unsigned int> mHashTiles2Pixel;
+        // a map from a tile to the number of its children in the scene
         HashMap<Ogre::String, unsigned int> mHashTiles2Count;
+        // sync status of the fore-end process
         bool mOverFromForeend;
-
+        // a pointer to a class encapsulated operation of restricted quadtrees
         libRQTS* mRQTS;
 
 };
