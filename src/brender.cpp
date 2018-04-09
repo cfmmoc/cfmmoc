@@ -565,7 +565,7 @@ void cfMMOCback::setupContent()
 
 	initColorTable();
 
-	mBackThread = new BBackLoadThread(mTextureExtension, mSimMeshFolder);
+	mBackThread = new BBackLoadThread(mSimMeshFolder);
 
 	mBackThread->fireRequestByName(Ogre::String("u"), mPreparation);
 	mBackThread->fireRequestByName(Ogre::String("v"), mPreparation);
