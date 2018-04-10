@@ -1,6 +1,17 @@
+/**
+    `cfMMOC` library for terrain rendering using OGRE (https://github.com/cfmmoc/cfmmoc/)
+    Licensed under The GNU General Public License v3.0 (GPLv3)
+    Any modification, re-utilization or copy of the source or binary format in other software or publications should mention a CITATION of this library.
+    Copyright (c) 2016-2018 by Authors (Jin Yan, Guanghong Gong, Ni Li and Luhao Xiao)
+**/
+
 #include <curl/curl.h>
 #include "brender.h"
 #include <sys/shm.h>
+
+/**
+  @brief  A class for scene management and terrain rendering.
+**/
 
 cfMMOCback::cfMMOCback()
 {
@@ -11,12 +22,10 @@ cfMMOCback::cfMMOCback()
 	mBackSceneMgr = 0;
 	mBackCamera = 0;
 	mBackWindow = 0;
+	
+	mSimMeshFolder = "sim/";
 
 	mInitLoadOver = false;
-	mPreparation = true;
-	mBackFramework = true;
-	mRetrieveTex = true;
-	mCountingTex = true;
 	mInitEye = Ogre::Vector3(-2296831, -3654685, 4765826);
 	mInitTarget = Ogre::Vector3(2049684, -3919982, 4667978);
 	mClipDist = Ogre::Vector2(100, 20000000);
@@ -24,7 +33,6 @@ cfMMOCback::cfMMOCback()
 	mBackFovY = 60;
 	mLoggingLevel = LL_LOW;
 	mCameraStyle = CS_FREELOOK;
-	mYawAxis = Vector3::UNIT_Y;
 
 	mSplitThresh = 6000;
 	mMergeThresh = 2000;
@@ -38,7 +46,6 @@ cfMMOCback::cfMMOCback()
 
 	curl_global_init(CURL_GLOBAL_DEFAULT);
 
-	mVisDispCount = 0;
 }
 
 void cfMMOCback::initColorTable()
@@ -94,38 +101,44 @@ void cfMMOCback::retrieveTexture()
 	mTexBuf->unlock();
 }
 
+/**
+@remarks
+	fire fetch request of tiles, 
+	check all tiles that is already fetched, 
+	load and split/merge them
+**/
 void cfMMOCback::checkLoadReq()
 {
     Ogre::String name = mRQTS->checkfile();
     if (!name.empty())
     {
-        mBackThread->fireRequestByName(name, mPreparation);
+        mBackThread->fireRequestByName(name);
     }
-            std::vector<Ogre::String> filelist = mBackThread->getLoadedFilename();
-			std::vector<Ogre::String>::iterator iter;
-			for (iter = filelist.begin(); iter != filelist.end(); iter++)
-			{
-				Ogre::String filename = *iter;
-				if (mPreparation)
-				{
-					loadTile(filename);
-
-					Ogre::String name = mRQTS->getfile();
-					if (!name.empty())
-					{
-                        if (name != "m")
-                        {
-                            splitTile(name);
-                        }
-                        else
-                        {
-                            mergeTile(filename);
-                        }
-					}
-				}
-			}
+    std::vector<Ogre::String> filelist = mBackThread->getLoadedFilename();
+    std::vector<Ogre::String>::iterator iter;
+    for (iter = filelist.begin(); iter != filelist.end(); iter++)
+    {
+	Ogre::String filename = *iter;
+	loadTile(filename);
+	Ogre::String name = mRQTS->getfile();
+	if (!name.empty())
+	{
+ 	       if (name != "m")
+               {
+                   splitTile(name);
+               }
+               else
+               {
+                   mergeTile(filename);
+               }
+	}
+    }
 }
 
+/**
+@remarks
+	split given tile
+**/
 void cfMMOCback::splitTile(Ogre::String filename)
 {
 
@@ -138,27 +151,25 @@ void cfMMOCback::splitTile(Ogre::String filename)
 			break;
 		}
 	}
-	if (mBackRender)
-	{
         unloadBackTile(filename);
         retrieveColor(filename);
-    }
 
 	Ogre::String sub_name[4] = {"/q", "/r", "/s", "/t"};
 
 	for (int i = 0; i < 4; i++)
 	{
 		mRenderedTiles.push_back(filename + sub_name[i]);
-		if (mBackRender)
-		{
-            createBackTile(filename + sub_name[i]);
-		}
+                createBackTile(filename + sub_name[i]);
 	}
 
     mRQTS->split(filename);
 
 }
 
+/**
+@remarks
+	split children of given tile
+**/
 void cfMMOCback::mergeTile(Ogre::String filename)
 {
 
@@ -175,18 +186,12 @@ void cfMMOCback::mergeTile(Ogre::String filename)
 				break;
 			}
 		}
-		if (mBackRender)
-		{
             unloadBackTile(filename + sub_name[i]);
             retrieveColor(filename + sub_name[i]);
-		}
 	}
 
 	mRenderedTiles.push_back(filename);
-	if (mBackRender)
-	{
         createBackTile(filename);
-	}
 
     mRQTS->merge(filename);
 
@@ -365,15 +370,15 @@ bool cfMMOCback::frameRenderingQueued(const Ogre::FrameEvent& evt)
             if (mSharedSttVis->mVisible[i])
                 count++;
         }
-        mVisCacheCount = count;
-        if (mVisCacheCount != 0)
+        if (count != 0)
             mSharedSttVis->mWritable = 1;
         else
             mSharedSttVis->mLength = 0;
     }
 
-	if (mRetrieveTex)
-	{
+	/**
+		retrieve texture from GPU
+	**/
         static unsigned int temp_delay = 0;
         if (temp_delay < 300)
         {
@@ -383,8 +388,9 @@ bool cfMMOCback::frameRenderingQueued(const Ogre::FrameEvent& evt)
         {
             retrieveTexture();
         }
-		if (mCountingTex)
-		{
+	/**
+		count pixel coverage of retrieved texture
+	**/
             if (mRQTS->isdone())
             {
                 if (mCountingWorker->isSleeping())
@@ -402,8 +408,6 @@ bool cfMMOCback::frameRenderingQueued(const Ogre::FrameEvent& evt)
                     mCountingWorker->copyTexture(mBackMemTex);
                 }
             }
-		}
-	}
 
 	{
         Ogre::Vector3 campos = mCamPosFromForeend;
@@ -450,11 +454,8 @@ bool cfMMOCback::frameRenderingQueued(const Ogre::FrameEvent& evt)
 			for (iter = filelist.begin(); iter != filelist.end(); iter++)
 			{
 				Ogre::String filename = *iter;
-				if (mPreparation)
-				{
-					loadTile(filename);
-				}
-                createBackTile(filename);
+				loadTile(filename);
+                		createBackTile(filename);
 				mRenderedTiles.push_back(filename);
 			}
 		}
@@ -526,10 +527,7 @@ void cfMMOCback::cleanupBackSceneMgr()
 	{
         mBackWindow->removeAllViewports();
 	}
-	if (mBackFramework)
-	{
         delete [] mBackMemTex;
-	}
 }
 
 void cfMMOCback::setupContent()
@@ -551,10 +549,7 @@ void cfMMOCback::setupContent()
 	mWindow->resize(mBackResolution.x, mBackResolution.y);
 	mRQTS = new libRQTS();
 
-	if (mBackFramework)
-	{
         setupBackSceneMgr();
-	}
 
 	mCameraMan->setStyle(mCameraStyle);
 	mTrayMgr->hideCursor();
@@ -567,12 +562,12 @@ void cfMMOCback::setupContent()
 
 	mBackThread = new BBackLoadThread(mSimMeshFolder);
 
-	mBackThread->fireRequestByName(Ogre::String("u"), mPreparation);
-	mBackThread->fireRequestByName(Ogre::String("v"), mPreparation);
-	mBackThread->fireRequestByName(Ogre::String("w"), mPreparation);
-	mBackThread->fireRequestByName(Ogre::String("x"), mPreparation);
-	mBackThread->fireRequestByName(Ogre::String("y"), mPreparation);
-	mBackThread->fireRequestByName(Ogre::String("z"), mPreparation);
+	mBackThread->fireRequestByName(Ogre::String("u"));
+	mBackThread->fireRequestByName(Ogre::String("v"));
+	mBackThread->fireRequestByName(Ogre::String("w"));
+	mBackThread->fireRequestByName(Ogre::String("x"));
+	mBackThread->fireRequestByName(Ogre::String("y"));
+	mBackThread->fireRequestByName(Ogre::String("z"));
 
     mCamera->setFixedYawAxis(false);
     mCamera->setNearClipDistance(mClipDist.x);
