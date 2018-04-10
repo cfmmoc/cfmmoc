@@ -13,41 +13,60 @@
   @brief  A class for scene management and terrain rendering.
 **/
 
+/**
+@remarks
+	initialize parameters
+**/
 cfMMOCback::cfMMOCback()
 {
 	mInfo["Title"] = "cfMMOC-Back";
 	mInfo["Description"] = "A Demo of cfMMOC.";
 	mInfo["Thumbnail"] = "cfmmoc-back.png";
 	mInfo["Category"] = "cfMMOC Terrain";
-	mBackSceneMgr = 0;
-	mBackCamera = 0;
-	mBackWindow = 0;
 	
+	// init pointers
+	mBackSceneMgr = NULL;
+	mBackCamera = NULL;
+	mBackWindow = NULL;
+	
+	// init folder name for simplified mesh
 	mSimMeshFolder = "sim/";
 
+	// init status of loading initial tiles
 	mInitLoadOver = false;
+	
+	// init point of camera and the point of look target
 	mInitEye = Ogre::Vector3(-2296831, -3654685, 4765826);
 	mInitTarget = Ogre::Vector3(2049684, -3919982, 4667978);
+	
+	// init distance of near and far clip plane, width and height of render to texuter, 
+	// and the field of view of viewport in y direction
 	mClipDist = Ogre::Vector2(100, 20000000);
 	mBackResolution = Ogre::Vector2(384, 210);
 	mBackFovY = 60;
+	
+	// init level of log detail and the style of camera movement
 	mLoggingLevel = LL_LOW;
 	mCameraStyle = CS_FREELOOK;
 
+	// init splitting and merging thresholds in pixel
 	mSplitThresh = 6000;
 	mMergeThresh = 2000;
 
+	// init shared memories and the sync status of fore-end process
 	mSharedMemCam = NULL;
-
 	mSharedMemVis = NULL;
-
 	mSharedMemFed = NULL;
 	mOverFromForeend = false;
 
+	// init libcurl
 	curl_global_init(CURL_GLOBAL_DEFAULT);
-
 }
 
+/**
+@remarks
+      	initialize discrete values for pseudo colors for rendering
+**/
 void cfMMOCback::initColorTable()
 {
 	for(int i = 0; i < 16; i++)
@@ -56,6 +75,10 @@ void cfMMOCback::initColorTable()
 	}
 }
 
+/**
+@remarks
+       	assign an unallocated color for given tile
+**/
 Ogre::ColourValue cfMMOCback::getAnUnusedColor(Ogre::String filename)
 {
 	for (unsigned int num = 1; num < 4096; num++)
@@ -74,6 +97,10 @@ Ogre::ColourValue cfMMOCback::getAnUnusedColor(Ogre::String filename)
 	return Ogre::ColourValue(Ogre::Math::RangeRandom(0, 1), Ogre::Math::RangeRandom(0, 1), Ogre::Math::RangeRandom(0, 1), Ogre::Math::RangeRandom(0, 1));
 }
 
+/**
+@remarks
+        retrieve color which is not used for given tile
+**/
 void cfMMOCback::retrieveColor(Ogre::String filename)
 {
 	for (unsigned int num = 1; num < 4096; num++)
@@ -88,6 +115,10 @@ void cfMMOCback::retrieveColor(Ogre::String filename)
 	}
 }
 
+/**
+@remarks
+       	retrieve image from GPU, and copy it to memory
+**/
 void cfMMOCback::retrieveTexture()
 {
 	HardwarePixelBufferSharedPtr mTexBuf = mBackTex->getBuffer();
@@ -105,7 +136,7 @@ void cfMMOCback::retrieveTexture()
 @remarks
 	fire fetch request of tiles, 
 	check all tiles that is already fetched, 
-	load and split/merge them
+	load and split or merge them
 **/
 void cfMMOCback::checkLoadReq()
 {
@@ -114,6 +145,9 @@ void cfMMOCback::checkLoadReq()
     {
         mBackThread->fireRequestByName(name);
     }
+    /**
+    	obtain all fetched tiles, traverse them to load and split or merge corresponding tile
+    **/
     std::vector<Ogre::String> filelist = mBackThread->getLoadedFilename();
     std::vector<Ogre::String>::iterator iter;
     for (iter = filelist.begin(); iter != filelist.end(); iter++)
@@ -141,7 +175,10 @@ void cfMMOCback::checkLoadReq()
 **/
 void cfMMOCback::splitTile(Ogre::String filename)
 {
-
+	/**
+		traverse all tiles in the scene, 
+		find given tile, delete it, unload corresponding tile and retrieve corresponding color
+	**/
 	for (std::vector<Ogre::String>::iterator iter = mRenderedTiles.begin();
 		iter != mRenderedTiles.end(); iter++)
 	{
@@ -154,16 +191,17 @@ void cfMMOCback::splitTile(Ogre::String filename)
         unloadBackTile(filename);
         retrieveColor(filename);
 
+	/**
+		create children for given tile, 
+		and execute the process of splitting
+	**/
 	Ogre::String sub_name[4] = {"/q", "/r", "/s", "/t"};
-
 	for (int i = 0; i < 4; i++)
 	{
 		mRenderedTiles.push_back(filename + sub_name[i]);
                 createBackTile(filename + sub_name[i]);
 	}
-
-    mRQTS->split(filename);
-
+    	mRQTS->split(filename);
 }
 
 /**
@@ -172,9 +210,11 @@ void cfMMOCback::splitTile(Ogre::String filename)
 **/
 void cfMMOCback::mergeTile(Ogre::String filename)
 {
-
+	/**
+		traverse all tiles in the scene, 
+		find children of given tile, delete them, unload corresponding tiles and retrieve corresponding colors
+	**/
 	Ogre::String sub_name[4] = {"/q", "/r", "/s", "/t"};
-
 	for (int i = 0; i < 4; i++)
 	{
 		for (std::vector<Ogre::String>::iterator iter = mRenderedTiles.begin();
@@ -190,13 +230,19 @@ void cfMMOCback::mergeTile(Ogre::String filename)
             retrieveColor(filename + sub_name[i]);
 	}
 
+	/**
+		create given tile, 
+		and execute the process of merging
+	**/
 	mRenderedTiles.push_back(filename);
         createBackTile(filename);
-
-    mRQTS->merge(filename);
-
+    	mRQTS->merge(filename);
 }
 
+/**
+@remarks
+      	load given tile into memory
+**/
 void cfMMOCback::loadTile(Ogre::String filename)
 {
 	MeshPtr pMesh = static_cast<MeshPtr>(MeshManager::getSingleton().getByName(
@@ -204,46 +250,57 @@ void cfMMOCback::loadTile(Ogre::String filename)
 	pMesh->load();
 }
 
+/**
+@remarks
+       	unload given tile
+**/
 void cfMMOCback::unloadBackTile(Ogre::String filename)
 {
     const HardwareBuffer::LockOptions DEST_LOCK_TYPE = HardwareBuffer::HBL_NORMAL;
 
+    /**
+    	unload and delete given from scene
+    **/
     {
-        {
-
-            SceneNode *node = mBackSceneMgr->getSceneNode(Ogre::String("back_") + filename);
-            node->detachAllObjects();
-            mBackSceneMgr->destroySceneNode(Ogre::String("back_") + filename);
-            mBackSceneMgr->destroyEntity(Ogre::String("back_") + filename);
-            MeshPtr pMesh;
-        	pMesh = static_cast<MeshPtr>(MeshManager::getSingleton().getByName(
-        		mSimMeshFolder + replacefile(filename) + Ogre::String(".mesh"), ResourceGroupManager::INTERNAL_RESOURCE_GROUP_NAME));
-        	pMesh->unload();
-            ResourcePtr pRes;
-        	pRes = static_cast<ResourcePtr>(pMesh);
-        	MeshManager::getSingleton().remove(pRes);
-            pMesh = static_cast<MeshPtr>(MeshManager::getSingleton().getByName(
-                Ogre::String("back_") + filename + Ogre::String(".mesh"), ResourceGroupManager::INTERNAL_RESOURCE_GROUP_NAME));
-            pMesh->unload();
-            pRes = static_cast<ResourcePtr>(pMesh);
-            MeshManager::getSingleton().remove(pRes);
-        }
+        SceneNode *node = mBackSceneMgr->getSceneNode(Ogre::String("back_") + filename);
+        node->detachAllObjects();
+        mBackSceneMgr->destroySceneNode(Ogre::String("back_") + filename);
+        mBackSceneMgr->destroyEntity(Ogre::String("back_") + filename);
+        MeshPtr pMesh;
+        pMesh = static_cast<MeshPtr>(MeshManager::getSingleton().getByName(
+        	mSimMeshFolder + replacefile(filename) + Ogre::String(".mesh"), ResourceGroupManager::INTERNAL_RESOURCE_GROUP_NAME));
+        pMesh->unload();
+        ResourcePtr pRes;
+        pRes = static_cast<ResourcePtr>(pMesh);
+        MeshManager::getSingleton().remove(pRes);
+        pMesh = static_cast<MeshPtr>(MeshManager::getSingleton().getByName(
+            Ogre::String("back_") + filename + Ogre::String(".mesh"), ResourceGroupManager::INTERNAL_RESOURCE_GROUP_NAME));
+        pMesh->unload();
+        pRes = static_cast<ResourcePtr>(pMesh);
+        MeshManager::getSingleton().remove(pRes);
     }
+    /**
+    	unload material for given tile
+    **/
     {
-		MaterialPtr mat = static_cast<MaterialPtr>(MaterialManager::getSingleton().getByName(filename +
-            Ogre::StringConverter::toString(mHashMatCount[filename])));
-		mat->unload();
-		ResourcePtr pRes;
-		pRes = static_cast<ResourcePtr>(mat);
-		MaterialManager::getSingleton().remove(pRes);
-	}
+	MaterialPtr mat = static_cast<MaterialPtr>(MaterialManager::getSingleton().getByName(filename +
+        Ogre::StringConverter::toString(mHashMatCount[filename])));
+	mat->unload();
+	ResourcePtr pRes;
+	pRes = static_cast<ResourcePtr>(mat);
+	MaterialManager::getSingleton().remove(pRes);
+    }
 }
 
+/**
+@remarks
+       	create given tile
+**/
 void cfMMOCback::createBackTile(Ogre::String filename)
 {
 
-    const unsigned int BACKMESH_SUBID = 0;
-    const HardwareBuffer::LockOptions DEST_LOCK_TYPE = HardwareBuffer::HBL_DISCARD;
+    	const unsigned int BACKMESH_SUBID = 0;
+    	const HardwareBuffer::LockOptions DEST_LOCK_TYPE = HardwareBuffer::HBL_DISCARD;
 
 	MeshPtr pMesh = static_cast<MeshPtr>(MeshManager::getSingleton().getByName(
 		mSimMeshFolder + replacefile(filename) + Ogre::String(".mesh"), ResourceGroupManager::INTERNAL_RESOURCE_GROUP_NAME));
