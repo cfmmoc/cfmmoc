@@ -31,7 +31,6 @@ public:
 		fire a request to back-end thread
 	@par
 		reqname		file name of a tile
-		preparation	indicate if request is prepared in back-end thread
 	**/
 	void fireRequestByName(Ogre::String reqname);
 	void operationCompleted(BackgroundProcessTicket ticket, const BackgroundProcessResult& result);
