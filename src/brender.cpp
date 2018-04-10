@@ -309,6 +309,10 @@ void cfMMOCback::createBackTile(Ogre::String filename)
 	SubMesh* pSubMesh;
 	HardwareVertexBufferSharedPtr pVertexBuf;
 
+	/**
+		create manual mesh (name with back_$filename$) and corresponding submesh,
+		and copy vertex data from external loaded mesh (name with $filename$)
+	**/
 	{
         pCbMesh = MeshManager::getSingleton().createManual(
             Ogre::String("back_") + filename + Ogre::String(".mesh"), ResourceGroupManager::INTERNAL_RESOURCE_GROUP_NAME);
@@ -337,14 +341,18 @@ void cfMMOCback::createBackTile(Ogre::String filename)
 	pMesh->getSubMesh(BACKMESH_SUBID)->vertexData->vertexBufferBinding->getBuffer(0)->unlock();
 	pSubMesh->vertexData->vertexBufferBinding->getBuffer(0)->unlock();
 
+	/**
+		copy index data from external loaded mesh (name with $filename$) 
+		to manual mesh (name with back_$filename$)
+	**/
 	size_t indexCount = pMesh->getSubMesh(BACKMESH_SUBID)->indexData->indexCount;
-    {
-       	pSubMesh->indexData->indexCount = indexCount;
-        pSubMesh->indexData->indexBuffer =
-            HardwareBufferManager::getSingleton().createIndexBuffer(
-            HardwareIndexBuffer::IT_16BIT, indexCount,
-            HardwareBuffer::HBU_STATIC_WRITE_ONLY, false);
-    }
+    	{
+       		pSubMesh->indexData->indexCount = indexCount;
+        	pSubMesh->indexData->indexBuffer =
+        	    HardwareBufferManager::getSingleton().createIndexBuffer(
+        	    HardwareIndexBuffer::IT_16BIT, indexCount,
+        	    HardwareBuffer::HBU_STATIC_WRITE_ONLY, false);
+    	}
 	unsigned short* pDstIndices = static_cast<unsigned short*>(
 		pSubMesh->indexData->indexBuffer->lock(0,
 		pMesh->getSubMesh(BACKMESH_SUBID)->indexData->indexBuffer->getSizeInBytes(),
@@ -360,6 +368,12 @@ void cfMMOCback::createBackTile(Ogre::String filename)
 	pCbMesh->_setBounds(pMesh->getBounds());
 	pCbMesh->load();
 
+	/**
+		create entity from mesh, 
+		create scene node and attach the entity
+		create material from a base material named 'tb_terra_sph_simple'
+		set the color by a unallocated color in the default pass in material
+	**/
     {
         Entity *ent = mBackSceneMgr->createEntity(Ogre::String("back_") + filename,
             Ogre::String("back_") + filename + Ogre::String(".mesh"));
@@ -378,16 +392,24 @@ void cfMMOCback::createBackTile(Ogre::String filename)
         MaterialPtr mat = basemat->clone(filename +
             Ogre::StringConverter::toString(mHashMatCount[filename]));
         Ogre::ColourValue color = getAnUnusedColor(filename);
-			mat.getPointer()->getTechnique(0)->getPass(0)->getTextureUnitState(0)->setColourOperationEx(
-			LBX_SOURCE1, LBS_MANUAL, LBS_CURRENT, color);
-		ent->setMaterial(mat);
+	mat.getPointer()->getTechnique(0)->getPass(0)->getTextureUnitState(0)->setColourOperationEx(
+		LBX_SOURCE1, LBS_MANUAL, LBS_CURRENT, color);
+	ent->setMaterial(mat);
     }
 
 }
 
+/**
+@remarks
+       	rendering main loop
+@par
+	evt	FrameEvent object
+**/
 bool cfMMOCback::frameRenderingQueued(const Ogre::FrameEvent& evt)
 {
-
+    /**
+    	sync camera position and orientation from fore-end process
+    **/
     if(mSharedSttCam->mWritable != 0)
     {
         mCamPosFromForeend = mSharedSttCam->mCamPos;
@@ -396,6 +418,9 @@ bool cfMMOCback::frameRenderingQueued(const Ogre::FrameEvent& evt)
         mSharedSttCam->mWritable = 0;
     }
 
+    /**
+    	sync the status of fore-end process, if current status mOverFromForeend == false
+    **/
     if(mSharedSttFed->mWritable != 0)
     {
         if (!mOverFromForeend)
@@ -405,8 +430,14 @@ bool cfMMOCback::frameRenderingQueued(const Ogre::FrameEvent& evt)
         }
     }
 
+    /**
+    	send splitting or merging request from back-end process to fore-end process
+    **/
     mRQTS->sendfile();
 
+    /**
+    	send visibility of tiles from back-end process to fore-end process
+    **/
     if (mSharedSttVis->mWritable != 1)
     {
         mSharedSttVis->mLength = 0;
