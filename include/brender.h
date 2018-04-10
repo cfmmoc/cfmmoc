@@ -59,6 +59,10 @@ class cfMMOCback : public SdkSample
 {
 public:
 
+	/**
+	@remarks
+		initialize parameters
+	**/
 	cfMMOCback();
 	/**
     	@remarks
@@ -109,7 +113,7 @@ protected:
     	@remarks
         	fire fetch request of tiles, 
 		check all tiles that is already fetched, 
-		load and split/merge them
+		load and split or merge them
     	**/
 	void checkLoadReq();
 	/**
@@ -146,7 +150,7 @@ protected:
 	void initColorTable();
 	/**
     	@remarks
-        	assign an unused color for given tile
+        	assign an unallocated color for given tile
     	**/
 	Ogre::ColourValue getAnUnusedColor(Ogre::String filename);
 	/**
@@ -156,7 +160,7 @@ protected:
 	void retrieveColor(Ogre::String filename);
 	/**
     	@remarks
-        	retrieve image from GPU
+        	retrieve image from GPU, and copy it to memory
     	**/
 	void retrieveTexture();
 	
@@ -208,7 +212,7 @@ protected:
 	Ogre::LoggingLevel mLoggingLevel;
 	// style of camera movement
 	OgreBites::CameraStyle mCameraStyle;
-	// indicate if initial tile (first six tiles covering the whole Earth) load is done
+	// indicate if initial tiles (first six tiles covering the whole Earth) load is done
 	bool mInitLoadOver;
 
 	// a thread to pixel counting
