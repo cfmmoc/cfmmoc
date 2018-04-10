@@ -34,9 +34,8 @@ BBackLoadThread::~BBackLoadThread()
 	create mesh resource, prepare/load it, and store the corresponding request ticket to mTicketsMesh and mTicketFilename
 @par
 	reqname		file name of a tile
-	preparation	indicate if request is prepared in back-end thread
 **/
-void BBackLoadThread::fireRequestByName(Ogre::String reqname, bool preparation)
+void BBackLoadThread::fireRequestByName(Ogre::String reqname)
 {
 	Ogre::BackgroundProcessTicket t1;
 	Ogre::String dirname, filename, purefilename, serverfilename;
@@ -45,10 +44,7 @@ void BBackLoadThread::fireRequestByName(Ogre::String reqname, bool preparation)
 	MeshPtr pMesh = static_cast<MeshPtr>(MeshManager::getSingleton().create(serverfilename + Ogre::String(".mesh"),
            	ResourceGroupManager::INTERNAL_RESOURCE_GROUP_NAME));
 	pMesh->setBackgroundLoaded(true);
-	if (preparation)
-		t1 = ResourceBackgroundQueue::getSingleton().prepare("Mesh", pMesh->getName(), ResourceGroupManager::INTERNAL_RESOURCE_GROUP_NAME, false, 0, 0, 0);
-	else
-		t1 = ResourceBackgroundQueue::getSingleton().load("Mesh", pMesh->getName(), ResourceGroupManager::INTERNAL_RESOURCE_GROUP_NAME, false, 0, 0, 0);
+	t1 = ResourceBackgroundQueue::getSingleton().prepare("Mesh", pMesh->getName(), ResourceGroupManager::INTERNAL_RESOURCE_GROUP_NAME, false, 0, 0, 0);
 	mTicketsMesh.push_back(t1);
 	mTicketFilename[t1] = reqname;
 }
