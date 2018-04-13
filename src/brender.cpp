@@ -503,10 +503,13 @@ bool cfMMOCback::frameRenderingQueued(const Ogre::FrameEvent& evt)
             }
 
 	/**
-		camera
+		camera position and orientation is updated
+		while a slight modification of orientation is applied
+		which garateens viewing direction is not point to sky
+		camera porision is also changed slightly (100 meters higher)
 	**/
 	{
-        Ogre::Vector3 campos = mCamPosFromForeend;
+        	Ogre::Vector3 campos = mCamPosFromForeend;
 		mBackCamera->setPosition(campos + campos.normalisedCopy() * 100);
 		Ogre::Vector3 camdir = mCamDirFromForeend;
 		Ogre::Vector3 camtoearth = -mCamPosFromForeend;
@@ -524,19 +527,32 @@ bool cfMMOCback::frameRenderingQueued(const Ogre::FrameEvent& evt)
 		}
 		mBackCamera->setOrientation(camquat);
 	}
+	/**
+		if invalid camera position received from fore-end porcess, 
+		set camera position and look target point to fixed positions
+	**/
 	if (mCamPosFromForeend.length() < 1000)
 	{
-        mBackCamera->setPosition(10000000, 0, 0);
-        mBackCamera->lookAt(12000000, 0, 0);
+        	mBackCamera->setPosition(10000000, 0, 0);
+        	mBackCamera->lookAt(12000000, 0, 0);
 	}
 
+	/**
+		check if fetching of initial tiles is done
+		if done, fire load requests, check load requests, and split or merge tiles
+	**/
 	if (mInitLoadOver)
 	{
-        if (!mRQTS->isdone())
+        	if (!mRQTS->isdone())
 		{
 			checkLoadReq();
 		}
 	}
+	/**
+		if not, wait initial tiles to be fetched
+		load and create corresponding fetched tiles
+		if all initial tiles are fetched, mark that initial fetching is done
+	**/
 	else
 	{
 		if (mBackThread->isQueueEmpty())
@@ -557,39 +573,51 @@ bool cfMMOCback::frameRenderingQueued(const Ogre::FrameEvent& evt)
 		}
 	}
 
-//	return true;
 	return SdkSample::frameRenderingQueued(evt);  // don't forget the parent class updates!
 }
 
+
+/**
+@remarks
+       	keyboard/mouse input event processing funcs
+@par
+	evt	FrameEvent object
+**/
 bool cfMMOCback::keyPressed(const OIS::KeyEvent& evt)
 {
     return true;
 }
-
 bool cfMMOCback::keyReleased(const OIS::KeyEvent& evt)
 {
     return true;
 }
-
 bool cfMMOCback::mousePressed(const OIS::MouseEvent& evt, OIS::MouseButtonID id)
 {
     return true;
 }
-
 bool cfMMOCback::mouseReleased(const OIS::MouseEvent& evt, OIS::MouseButtonID id)
 {
     return true;
 }
-
 bool cfMMOCback::mouseMoved(const OIS::MouseEvent& evt)
 {
     return true;
 }
 
+
+/**
+@remarks
+       	initialize scene manager and resources for back-end process
+**/
 void cfMMOCback::setupBackSceneMgr()
 {
-    mBackSceneMgr = mSceneMgr;
-    mBackCamera = mCamera;
+	/**
+		initialize scene manager and camera
+		initialize initial camera position and orientation
+		initialize near and far distances of clip plane and field of view along y-direction
+	**/
+    	mBackSceneMgr = mSceneMgr;
+    	mBackCamera = mCamera;
 
 	mBackCamera->setPosition(mInitEye);
 	mBackCamera->lookAt(mInitTarget);
@@ -597,6 +625,10 @@ void cfMMOCback::setupBackSceneMgr()
 	mBackCamera->setFarClipDistance(mClipDist.y);
 	mBackCamera->setFOVy(Ogre::Degree(mBackFovY));
 
+	/**
+		initialize texture and render target for pixel counting
+		allocate correspoding memory
+	**/
 	mBackTex = TextureManager::getSingleton().createManual("BackTexture",
 		ResourceGroupManager::DEFAULT_RESOURCE_GROUP_NAME, TEX_TYPE_2D,
 		mBackResolution.x, mBackResolution.y, 0, PF_R8G8B8, TU_RENDERTARGET);
@@ -606,10 +638,17 @@ void cfMMOCback::setupBackSceneMgr()
 
 	mBackMemTex = new unsigned char[(unsigned int)(mBackResolution.x * mBackResolution.y * 4)];
 
-    mCountingWorker = new CountingThread(mBackResolution.x, mBackResolution.y, mSplitThresh, mMergeThresh, mRQTS);
+	/**
+		initialize counting thread
+	**/
+    	mCountingWorker = new CountingThread(mBackResolution.x, mBackResolution.y, mSplitThresh, mMergeThresh, mRQTS);
 	mCountingThread.start(*mCountingWorker);
 }
 
+/**
+@remarks
+       	cleanup scene manager, related resource and memory for back-end process
+**/
 void cfMMOCback::cleanupBackSceneMgr()
 {
 	if (mBackSceneMgr)
@@ -621,14 +660,20 @@ void cfMMOCback::cleanupBackSceneMgr()
 	}
 	if (mBackWindow)
 	{
-        mBackWindow->removeAllViewports();
+        	mBackWindow->removeAllViewports();
 	}
         delete [] mBackMemTex;
 }
 
+/**
+@remarks
+       	initialize scene manager, shared memories and resources
+**/
 void cfMMOCback::setupContent()
 {
-
+	/**
+		initialize shared memories and related variables
+	**/
 	mSharedIDCam = shmget((key_t)1234, sizeof(struct SHARED_CAM_DOF), 0666|IPC_CREAT);
 	mSharedMemCam = shmat(mSharedIDCam, 0, 0);
 	mSharedSttCam = (struct SHARED_CAM_DOF*)mSharedMemCam;
@@ -642,18 +687,32 @@ void cfMMOCback::setupContent()
 	mSharedMemFed = shmat(mSharedIDFed, (void*)0, 0);
 	mSharedSttFed = (struct SHARED_FED_BACK*)mSharedMemFed;
 
+	/**
+		initialize render window and restricted quadtrees logics
+		initialize scene manager and resources for back-end process
+		initialize style of camera movement and camera related parameters
+		initialize overlay element and level of log detail
+	**/
 	mWindow->resize(mBackResolution.x, mBackResolution.y);
 	mRQTS = new libRQTS();
 
         setupBackSceneMgr();
 
 	mCameraMan->setStyle(mCameraStyle);
+    	mCamera->setFixedYawAxis(false);
+    	mCamera->setNearClipDistance(mClipDist.x);
+    	mCamera->setFarClipDistance(mClipDist.y);
+
 	mTrayMgr->hideCursor();
 	mTrayMgr->hideLogo();
 	mTrayMgr->hideFrameStats();
 
 	Ogre::LogManager::getSingleton().setLogDetail(mLoggingLevel);
 
+	/**
+		initialize discrete values for pseudo colors for rendering
+		initialize tile fetching object, fire initial tiles to be fetched
+	**/
 	initColorTable();
 
 	mBackThread = new BBackLoadThread(mSimMeshFolder);
@@ -665,15 +724,21 @@ void cfMMOCback::setupContent()
 	mBackThread->fireRequestByName(Ogre::String("y"));
 	mBackThread->fireRequestByName(Ogre::String("z"));
 
-    mCamera->setFixedYawAxis(false);
-    mCamera->setNearClipDistance(mClipDist.x);
-    mCamera->setFarClipDistance(mClipDist.y);
-
 }
 
+/**
+@remarks
+       	cleanup scene manager, shared memories and resources
+**/
 void cfMMOCback::cleanupContent()
 {
-
+    /**
+    	cleanup restricted quadtrees logics
+	cleanup shared memories
+	cleanup scene manager, related resource and memory for back-end process
+	cleanup tile fetching object
+	cleanup libcurl
+    **/
     delete mRQTS;
 
     shmdt(mSharedMemCam);
@@ -685,9 +750,9 @@ void cfMMOCback::cleanupContent()
     shmdt(mSharedMemFed);
     shmctl(mSharedIDFed, IPC_RMID, 0);
 
-	cleanupBackSceneMgr();
+    cleanupBackSceneMgr();
 
-	delete mBackThread;
+    delete mBackThread;
 
-	curl_global_cleanup();
+    curl_global_cleanup();
 }
