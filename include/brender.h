@@ -89,23 +89,23 @@ protected:
 
 	/**
     	@remarks
-        	initialize scene management for back-end process
+        	initialize scene manager and resources for back-end process
     	**/
 	void setupBackSceneMgr();
 	/**
     	@remarks
-        	cleanup scene management for back-end process
+        	cleanup scene manager, related resource and memory for back-end process
     	**/
 	void cleanupBackSceneMgr();
 
 	/**
     	@remarks
-        	initialize scene management
+        	initialize scene manager, shared memories and resources
     	**/
 	void setupContent();
 	/**
     	@remarks
-        	cleanup scene management
+        	cleanup scene manager, shared memories and resources
     	**/
 	void cleanupContent();
 
@@ -195,7 +195,7 @@ protected:
 	Ogre::TexturePtr mBackTex;
 	// pointer to memory corresponding to render to texture
 	unsigned char *mBackMemTex;
-	// field of view of viewport in y direction
+	// field of view of viewport along y direction
 	Ogre::Real mBackFovY;
 
 	// pointer to tile fetching thread
