@@ -68,7 +68,7 @@ protected:
 	HashMap<Ogre::String, unsigned int> mHashMatCount;
 
 	FBackLoadThread* mBackThread;
-	bool mPreparation, mRenderTex, mHideAABB, mHideInvisible;
+	bool mHideAABB, mHideInvisible;
 	Ogre::Vector3 mInitEye, mInitTarget;
 	Ogre::Vector2 mClipDist;
 	std::vector<Ogre::String> mRenderedTiles;
