@@ -11,7 +11,7 @@
 using namespace Ogre;
 
 /**
-  @brief  A class for fetching tiles from server for fore-end thread.
+  @brief  A class for fetching tiles from server for fore-end process.
 **/
 
 class FBackLoadThread : public Ogre::ResourceBackgroundQueue::Listener
