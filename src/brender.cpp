@@ -465,7 +465,7 @@ bool cfMMOCback::frameRenderingQueued(const Ogre::FrameEvent& evt)
     }
 
 	/**
-		retrieve texture from GPU
+		retrieve texture from GPU after a time delay relateive to the starting of the process
 	**/
         static unsigned int temp_delay = 0;
         if (temp_delay < 300)
@@ -477,7 +477,12 @@ bool cfMMOCback::frameRenderingQueued(const Ogre::FrameEvent& evt)
             retrieveTexture();
         }
 	/**
-		count pixel coverage of retrieved texture
+		count pixel coverage of retrieved texture if both mRQTS and counting thread are idle
+		pixel coverage (a map from color to coverage) is returned by getCountingResults
+		a copy of map from color to tile name is returned by getAnotherHashColor2Tile
+		and map from color to tile name in counting thread is updated by fillinHashMaps accordingly
+		sync status of fore-end process in couting thread is also updated by updateOverState
+		finally, image to count is transfered to counting thread
 	**/
             if (mRQTS->isdone())
             {
@@ -497,6 +502,9 @@ bool cfMMOCback::frameRenderingQueued(const Ogre::FrameEvent& evt)
                 }
             }
 
+	/**
+		camera
+	**/
 	{
         Ogre::Vector3 campos = mCamPosFromForeend;
 		mBackCamera->setPosition(campos + campos.normalisedCopy() * 100);
