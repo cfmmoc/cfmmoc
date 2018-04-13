@@ -10,8 +10,6 @@ cfMMOCfore::cfMMOCfore()
 	mInfo["Category"] = "cfMMOC Terrain";
 
 	mInitLoadOver = false;
-	mPreparation = true;
-	mRenderTex = true;
 	mHideAABB = false;
 	mHideInvisible = true;
 	mInitEye = Ogre::Vector3(3000000, 700000, 5800000);
@@ -38,49 +36,43 @@ void cfMMOCfore::checkLoadReq()
     Ogre::String name = mRQTS->checkfile();
     if (!name.empty())
     {
-        mBackThread->fireRequestByName(name, mPreparation, mRenderTex);
+        mBackThread->fireRequestByName(name);
     }
-    std::vector<Ogre::String> filelist = mBackThread->getLoadedFilename(mRenderTex);
-			std::vector<Ogre::String>::iterator iter;
-			for (iter = filelist.begin(); iter != filelist.end(); iter++)
-			{
-				Ogre::String filename = *iter;
-				if (mPreparation)
-				{
-					loadTile(filename);
+    std::vector<Ogre::String> filelist = mBackThread->getLoadedFilename();
+    std::vector<Ogre::String>::iterator iter;
+    for (iter = filelist.begin(); iter != filelist.end(); iter++)
+    {
+	Ogre::String filename = *iter;
+	loadTile(filename);
 
-					Ogre::String name = mRQTS->getfile();
+	Ogre::String name = mRQTS->getfile();
 
-                    if (!name.empty())
-					{
-                        if (name != "m")
-                        {
-                            for (unsigned int i = 0; i < 4; i++)
-                            {
+        if (!name.empty())
+	{
+               if (name != "m")
+               {
+                      for (unsigned int i = 0; i < 4; i++)
+                      {
                                 unsigned char mask = 0;
                                 std::string neighbor = mRQTS->checkbound(name, i, &mask);
                                 if (mask != 0)
                                 {
-                                    unloadTile(neighbor, false);
-                                    createTile(neighbor, mask);
-                                }
-                            }
-                            splitTile(name);
-                        }
-                        else
-                        {
-                            mergeTile(filename);
-
-                        }
-                        if (mRQTS->isdone())
-						{
-                            mForeOver = true;
-						}
-					}
+					unloadTile(neighbor, false);
+					createTile(neighbor, mask);
 				}
-			}
-
-
+                      }
+                      splitTile(name);
+                }
+		else
+		{
+		      mergeTile(filename);
+		}
+                if (mRQTS->isdone())
+		{
+                      mForeOver = true;
+		}
+	}
+    }
 }
 
 void cfMMOCfore::splitTile(Ogre::String filename)
@@ -137,12 +129,9 @@ void cfMMOCfore::loadTile(Ogre::String filename)
 	MeshPtr pMesh = static_cast<MeshPtr>(MeshManager::getSingleton().getByName(
 		mComMeshFolder + filename + Ogre::String(".mesh"), ResourceGroupManager::INTERNAL_RESOURCE_GROUP_NAME));
 	pMesh->load();
-	if (mRenderTex)
-	{
-		TexturePtr pTex = static_cast<TexturePtr>(TextureManager::getSingleton().getByName(
-			mTexFolder + filename + mTextureExtension, ResourceGroupManager::INTERNAL_RESOURCE_GROUP_NAME));
-		pTex->load();
-	}
+	TexturePtr pTex = static_cast<TexturePtr>(TextureManager::getSingleton().getByName(
+		mTexFolder + filename + mTextureExtension, ResourceGroupManager::INTERNAL_RESOURCE_GROUP_NAME));
+	pTex->load();
 }
 
 void cfMMOCfore::unloadTile(Ogre::String filename, bool full)
@@ -155,11 +144,11 @@ void cfMMOCfore::unloadTile(Ogre::String filename, bool full)
 	ResourcePtr pRes;
 	if (full)
 	{
-        pMesh = static_cast<MeshPtr>(MeshManager::getSingleton().getByName(
-            mComMeshFolder + filename + Ogre::String(".mesh"), ResourceGroupManager::INTERNAL_RESOURCE_GROUP_NAME));
-        pMesh->unload();
-        pRes = static_cast<ResourcePtr>(pMesh);
-        MeshManager::getSingleton().remove(pRes);
+	        pMesh = static_cast<MeshPtr>(MeshManager::getSingleton().getByName(
+        	    mComMeshFolder + filename + Ogre::String(".mesh"), ResourceGroupManager::INTERNAL_RESOURCE_GROUP_NAME));
+        	pMesh->unload();
+        	pRes = static_cast<ResourcePtr>(pMesh);
+        	MeshManager::getSingleton().remove(pRes);
 	}
 	pMesh = static_cast<MeshPtr>(MeshManager::getSingleton().getByName(
 		Ogre::String("combined_") + filename + Ogre::String(".mesh"), ResourceGroupManager::INTERNAL_RESOURCE_GROUP_NAME));
@@ -168,12 +157,12 @@ void cfMMOCfore::unloadTile(Ogre::String filename, bool full)
 	MeshManager::getSingleton().remove(pRes);
 	{
 		MaterialPtr mat = static_cast<MaterialPtr>(MaterialManager::getSingleton().getByName(filename +
-            Ogre::StringConverter::toString(mHashMatCount[filename])));
+            		Ogre::StringConverter::toString(mHashMatCount[filename])));
 		mat->unload();
 		pRes = static_cast<ResourcePtr>(mat);
 		MaterialManager::getSingleton().remove(pRes);
 	}
-	if (mRenderTex && full)
+	if (full)
 	{
 		TexturePtr pTex = static_cast<TexturePtr>(TextureManager::getSingleton().getByName(
 			mTexFolder + filename + mTextureExtension, ResourceGroupManager::INTERNAL_RESOURCE_GROUP_NAME));
@@ -283,8 +272,7 @@ void cfMMOCfore::createTile(Ogre::String filename, unsigned char mask)
             }
             mat = basemat->clone(filename + Ogre::StringConverter::toString(mHashMatCount[filename]));
 		}
-		if (mRenderTex)
-			mat.getPointer()->getTechnique(0)->getPass(0)->getTextureUnitState(0)->setTextureName(
+		mat.getPointer()->getTechnique(0)->getPass(0)->getTextureUnitState(0)->setTextureName(
 			mTexFolder + filename + mTextureExtension);
 		ent->setMaterial(mat);
 	}
@@ -390,16 +378,13 @@ bool cfMMOCfore::frameRenderingQueued(const Ogre::FrameEvent& evt)
 		}
 		else
 		{
-			std::vector<Ogre::String> filelist = mBackThread->getLoadedFilename(mRenderTex);
+			std::vector<Ogre::String> filelist = mBackThread->getLoadedFilename();
 			std::vector<Ogre::String>::iterator iter;
 			for (iter = filelist.begin(); iter != filelist.end(); iter++)
 			{
 				Ogre::String filename = *iter;
-				if (mPreparation)
-				{
-					loadTile(filename);
-				}
-                createTile(filename);
+				loadTile(filename);
+		                createTile(filename);
 				mRenderedTiles.push_back(filename);
 			}
 		}
@@ -466,12 +451,12 @@ void cfMMOCfore::setupContent()
 
 	mBackThread = new FBackLoadThread(mTextureExtension, mComMeshFolder, mTexFolder);
 
-	mBackThread->fireRequestByName(Ogre::String("u"), mPreparation, mRenderTex);
-	mBackThread->fireRequestByName(Ogre::String("v"), mPreparation, mRenderTex);
-	mBackThread->fireRequestByName(Ogre::String("w"), mPreparation, mRenderTex);
-	mBackThread->fireRequestByName(Ogre::String("x"), mPreparation, mRenderTex);
-	mBackThread->fireRequestByName(Ogre::String("y"), mPreparation, mRenderTex);
-	mBackThread->fireRequestByName(Ogre::String("z"), mPreparation, mRenderTex);
+	mBackThread->fireRequestByName(Ogre::String("u"));
+	mBackThread->fireRequestByName(Ogre::String("v"));
+	mBackThread->fireRequestByName(Ogre::String("w"));
+	mBackThread->fireRequestByName(Ogre::String("x"));
+	mBackThread->fireRequestByName(Ogre::String("y"));
+	mBackThread->fireRequestByName(Ogre::String("z"));
 
     mCamera->setFixedYawAxis(false);
     mCamera->setNearClipDistance(mClipDist.x);
