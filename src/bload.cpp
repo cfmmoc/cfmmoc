@@ -9,7 +9,7 @@
 #include "rqts.h"
 
 /**
-  @brief  A class for fetch tile from server in back-end thread.
+  @brief  A class for fetching tiles from server for back-end process.
 **/
 
 /**
