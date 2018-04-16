@@ -131,7 +131,7 @@ protected:
         	create given tile
 	@par
 		filename	name of given tile
-		mask		bitwise variable indicates the density of triangles on borders
+		mask		bitwise variable indicates the density of triangles on boundaries
 				0000b means low density
 				1111b means high density
     	**/
