@@ -591,7 +591,6 @@ bool cfMMOCback::frameRenderingQueued(const Ogre::FrameEvent& evt)
 	return SdkSample::frameRenderingQueued(evt);  // don't forget the parent class updates!
 }
 
-
 /**
 @remarks
        	keyboard/mouse input event processing funcs
