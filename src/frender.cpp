@@ -408,6 +408,9 @@ void cfMMOCfore::createTile(Ogre::String filename, unsigned char mask)
 bool cfMMOCfore::frameRenderingQueued(const Ogre::FrameEvent& evt)
 {
 
+    /**
+    	send camera position and orientation to back-end process
+    **/
     if (mSharedSttCam->mWritable != 1)
     {
         mSharedSttCam->mCamPos = mCamera->getDerivedPosition();
@@ -416,15 +419,25 @@ bool cfMMOCfore::frameRenderingQueued(const Ogre::FrameEvent& evt)
         mSharedSttCam->mWritable = 1;
     }
 
+    /**
+    	send the status of fore-end process to back-end process
+    **/
     if (mSharedSttFed->mWritable != 1)
     {
         mSharedSttFed->mForeOver = mForeOver;
         mSharedSttFed->mWritable = 1;
     }
 
+    /**
+    	receive splitting or merging request from back-end process, 
+	and mark status variable to true if request received
+    **/
     if (mRQTS->recvfile())
         mForeOver = false;
 
+    /**
+    	sync visibility of tiles from back-end process
+    **/
     if(mSharedSttVis->mWritable != 0)
     {
         memcpy(&mTilesVisbleReg, mSharedSttVis, sizeof(struct SHARED_TILE_VIS));
@@ -432,6 +445,9 @@ bool cfMMOCfore::frameRenderingQueued(const Ogre::FrameEvent& evt)
         mSharedSttVis->mWritable = 0;
     }
 
+    /**
+    	camera movement along an orbit
+    **/
     artorbit += evt.timeSinceLastFrame / 60;
     if (artorbit > 2 * Ogre::Math::PI)
         artorbit -= 2 * Ogre::Math::PI;
@@ -442,6 +458,9 @@ bool cfMMOCfore::frameRenderingQueued(const Ogre::FrameEvent& evt)
 
     mCamera->setPosition(artpos);
 
+    /**
+    	calc and set camera look target
+    **/
     float tarorbit = artorbit + 0.006;
     if (tarorbit > 2 * Ogre::Math::PI)
         tarorbit -= 2 * Ogre::Math::PI;
@@ -451,6 +470,13 @@ bool cfMMOCfore::frameRenderingQueued(const Ogre::FrameEvent& evt)
         Ogre::Math::Cos(Ogre::Radian(arty)) * Ogre::Math::Sin(Ogre::Radian(tarorbit)), Ogre::Math::Sin(Ogre::Radian(arty)));
     mCamera->lookAt(artpos);
 
+    /**
+    	occlusion culling
+	traverse all visible tiles in back-end process, 
+	if the correspoding tile in fore-end visible exists, then set it visible
+	otherwise, find its parent tile, and set its parent (if exists) visible, 
+	if its parent is not exist, find its children, and set them (if exist) visible
+    **/
 #if 1
     {
         for (unsigned int i = 0; i < mTilesVisbleReg.mLength; i++)
@@ -488,6 +514,10 @@ bool cfMMOCfore::frameRenderingQueued(const Ogre::FrameEvent& evt)
     }
 #endif
 
+	/**
+		check if fetching of initial tiles is done
+		if done, fire load requests, check load requests, and split or merge tiles
+	**/
 	if (mInitLoadOver)
 	{
         if (!mRQTS->isdone())
@@ -495,6 +525,11 @@ bool cfMMOCfore::frameRenderingQueued(const Ogre::FrameEvent& evt)
 			checkLoadReq();
 		}
 	}
+	/**
+		if not, wait initial tiles to be fetched
+		load and create corresponding fetched tiles
+		if all initial tiles are fetched, mark that initial fetching is done
+	**/
 	else
 	{
 		if (mBackThread->isQueueEmpty())
@@ -519,7 +554,12 @@ bool cfMMOCfore::frameRenderingQueued(const Ogre::FrameEvent& evt)
     return SdkSample::frameRenderingQueued(evt);  // don't forget the parent class updates!
 }
 
-#if 1
+/**
+@remarks
+       	keyboard/mouse input event processing funcs
+@par
+	evt	FrameEvent object
+**/
 
 bool cfMMOCfore::keyPressed(const OIS::KeyEvent& evt)
 {
@@ -546,12 +586,16 @@ bool cfMMOCfore::mouseMoved(const OIS::MouseEvent& evt)
     return true;
 }
 
-#endif // 1
-
+/**
+@remarks
+       	initialize scene manager, shared memories and resources
+**/
 void cfMMOCfore::setupContent()
 {
-
-    mSharedIDCam = shmget((key_t)1234, sizeof(struct SHARED_CAM_DOF), 0666|IPC_CREAT);
+	/**
+		initialize shared memories and related variables
+	**/
+    	mSharedIDCam = shmget((key_t)1234, sizeof(struct SHARED_CAM_DOF), 0666|IPC_CREAT);
 	mSharedMemCam = shmat(mSharedIDCam, (void*)0, 0);
 	mSharedSttCam = (struct SHARED_CAM_DOF*)mSharedMemCam;
 
@@ -564,35 +608,51 @@ void cfMMOCfore::setupContent()
 	mSharedMemFed = shmat(mSharedIDFed, (void*)0, 0);
 	mSharedSttFed = (struct SHARED_FED_BACK*)mSharedMemFed;
 
+	/**
+		initialize render window and restricted quadtrees logics
+		initialize style of camera movement and camera related parameters
+		initialize overlay element and level of log detail
+	**/
 	mWindow->resize(1280, 700);
+	mRQTS = new libRQTS();
 
 	mCameraMan->setStyle(mCameraStyle);
+    	mCamera->setFixedYawAxis(false);
+    	mCamera->setNearClipDistance(mClipDist.x);
+    	mCamera->setFarClipDistance(mClipDist.y);
+	
 	mTrayMgr->hideCursor();
 	mTrayMgr->hideLogo();
 	mTrayMgr->hideFrameStats();
 
 	Ogre::LogManager::getSingleton().setLogDetail(mLoggingLevel);
 
-	mRQTS = new libRQTS();
-
+	/**
+		initialize tile fetching object, fire initial tiles to be fetched
+	**/
 	mBackThread = new FBackLoadThread(mTextureExtension, mComMeshFolder, mTexFolder);
-
+	
 	mBackThread->fireRequestByName(Ogre::String("u"));
 	mBackThread->fireRequestByName(Ogre::String("v"));
 	mBackThread->fireRequestByName(Ogre::String("w"));
 	mBackThread->fireRequestByName(Ogre::String("x"));
 	mBackThread->fireRequestByName(Ogre::String("y"));
 	mBackThread->fireRequestByName(Ogre::String("z"));
-
-    mCamera->setFixedYawAxis(false);
-    mCamera->setNearClipDistance(mClipDist.x);
-    mCamera->setFarClipDistance(mClipDist.y);
-
 }
 
+/**
+@remarks
+       	cleanup scene manager, shared memories and resources
+**/
 void cfMMOCfore::cleanupContent()
 {
 
+    /**
+    	cleanup restricted quadtrees logics
+	cleanup shared memories
+	cleanup tile fetching object
+	cleanup libcurl
+    **/
     delete mRQTS;
 
     shmdt(mSharedMemCam);
@@ -604,7 +664,7 @@ void cfMMOCfore::cleanupContent()
     shmdt(mSharedMemFed);
     shmctl(mSharedIDFed, IPC_RMID, 0);
 
-	delete mBackThread;
+    delete mBackThread;
 
-	curl_global_cleanup();
+    curl_global_cleanup();
 }
