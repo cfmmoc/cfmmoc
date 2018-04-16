@@ -78,6 +78,8 @@ void cfMMOCback::initColorTable()
 /**
 @remarks
        	assign an unallocated color for given tile
+@par
+	filename	name of given tile
 **/
 Ogre::ColourValue cfMMOCback::getAnUnusedColor(Ogre::String filename)
 {
@@ -100,6 +102,8 @@ Ogre::ColourValue cfMMOCback::getAnUnusedColor(Ogre::String filename)
 /**
 @remarks
         retrieve color which is not used for given tile
+@par
+	filename	name of given tile
 **/
 void cfMMOCback::retrieveColor(Ogre::String filename)
 {
@@ -172,6 +176,8 @@ void cfMMOCback::checkLoadReq()
 /**
 @remarks
 	split given tile
+@par
+	filename	name of given tile
 **/
 void cfMMOCback::splitTile(Ogre::String filename)
 {
@@ -207,6 +213,8 @@ void cfMMOCback::splitTile(Ogre::String filename)
 /**
 @remarks
 	split children of given tile
+@par
+	filename	name of given tile
 **/
 void cfMMOCback::mergeTile(Ogre::String filename)
 {
@@ -242,6 +250,8 @@ void cfMMOCback::mergeTile(Ogre::String filename)
 /**
 @remarks
       	load given tile into memory
+@par
+	filename	name of given tile
 **/
 void cfMMOCback::loadTile(Ogre::String filename)
 {
@@ -253,6 +263,8 @@ void cfMMOCback::loadTile(Ogre::String filename)
 /**
 @remarks
        	unload given tile
+@par
+	filename	name of given tile
 **/
 void cfMMOCback::unloadBackTile(Ogre::String filename)
 {
@@ -280,7 +292,7 @@ void cfMMOCback::unloadBackTile(Ogre::String filename)
         MeshManager::getSingleton().remove(pRes);
     }
     /**
-    	unload material for given tile
+    	unload and delete material for given tile
     **/
     {
 	MaterialPtr mat = static_cast<MaterialPtr>(MaterialManager::getSingleton().getByName(filename +
@@ -295,6 +307,8 @@ void cfMMOCback::unloadBackTile(Ogre::String filename)
 /**
 @remarks
        	create given tile
+@par
+	filename	name of given tile
 **/
 void cfMMOCback::createBackTile(Ogre::String filename)
 {
@@ -477,7 +491,8 @@ bool cfMMOCback::frameRenderingQueued(const Ogre::FrameEvent& evt)
             retrieveTexture();
         }
 	/**
-		count pixel coverage of retrieved texture if both mRQTS and counting thread are idle
+		if updating restricted quadtrees is done and counting thread is idle, 
+		then count pixel coverage of retrieved texture
 		pixel coverage (a map from color to coverage) is returned by getCountingResults
 		a copy of map from color to tile name is returned by getAnotherHashColor2Tile
 		and map from color to tile name in counting thread is updated by fillinHashMaps accordingly
