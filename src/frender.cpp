@@ -1,7 +1,22 @@
+/**
+    `cfMMOC` library for terrain rendering using OGRE (https://github.com/cfmmoc/cfmmoc/)
+    Licensed under The GNU General Public License v3.0 (GPLv3)
+    Any modification, re-utilization or copy of the source or binary format in other software or publications should mention a CITATION of this library.
+    Copyright (c) 2016-2018 by Authors (Jin Yan, Guanghong Gong, Ni Li and Luhao Xiao)
+**/
+
 #include <curl/curl.h>
 #include "frender.h"
 #include <sys/shm.h>
 
+/**
+  @brief  A class for scene management and terrain rendering in fore-end process.
+**/
+
+/**
+@remarks
+	initialize parameters
+**/
 cfMMOCfore::cfMMOCfore()
 {
 	mInfo["Title"] = "cfMMOC-Fore";
@@ -9,30 +24,45 @@ cfMMOCfore::cfMMOCfore()
 	mInfo["Thumbnail"] = "cfmmoc-fore.png";
 	mInfo["Category"] = "cfMMOC Terrain";
 	
+	// init folder name and texture extension for mesh and texture
 	mComMeshFolder = "com/";
 	mTexFolder = "tex/";
 	mTextureExtension = ".dds";
 
+	// init status of loading initial tiles
 	mInitLoadOver = false;
+	
+	// init point of camera and the point of look target
 	mInitEye = Ogre::Vector3(3000000, 700000, 5800000);
 	mInitTarget = Ogre::Vector3(0, 0, 0);
+
+	// init distance of near and far clip plane, 
+	// level of log detail and the style of camera movement
 	mClipDist = Ogre::Vector2(100, 20000000);
 	mLoggingLevel = LL_LOW;
 	mCameraStyle = CS_FREELOOK;
 
+	// init shared memories, the sync status of fore-end process, 
+	// and the length of the copy of visibility of tiles
 	mSharedMemCam = NULL;
-
 	mSharedMemVis = NULL;
-
 	mSharedMemFed = NULL;
 	mForeOver = false;
 	mTilesVisbleReg.mLength = 0;
 
+	// init libcurl
 	curl_global_init(CURL_GLOBAL_DEFAULT);
 
+	// init the starting point of the orbit around the Earth
 	artorbit = 0.0;
 }
 
+/**
+@remarks
+	fire fetch request of tiles, 
+	check all tiles that is already fetched, 
+	load and split or merge them
+**/
 void cfMMOCfore::checkLoadReq()
 {
     Ogre::String name = mRQTS->checkfile();
@@ -40,6 +70,10 @@ void cfMMOCfore::checkLoadReq()
     {
         mBackThread->fireRequestByName(name);
     }
+    /**
+    	obtain all fetched tiles, traverse them to load and split or merge corresponding tile
+	if updating restricted quadtrees is done, mark fore-end status (mForeOver) is true
+    **/
     std::vector<Ogre::String> filelist = mBackThread->getLoadedFilename();
     std::vector<Ogre::String>::iterator iter;
     for (iter = filelist.begin(); iter != filelist.end(); iter++)
@@ -53,6 +87,11 @@ void cfMMOCfore::checkLoadReq()
 	{
                if (name != "m")
                {
+		       /**
+		       		crack fixing on boundary
+				check four neighbor tiles, if density of triangle on boundary is needed to update, 
+				then unload neighbor tile(s) and recreate the corresponding tile(s)
+		       **/
                       for (unsigned int i = 0; i < 4; i++)
                       {
                                 unsigned char mask = 0;
@@ -77,8 +116,19 @@ void cfMMOCfore::checkLoadReq()
     }
 }
 
+/**
+@remarks
+	split given tile
+@par
+	filename	name of given tile
+**/
 void cfMMOCfore::splitTile(Ogre::String filename)
 {
+	/**
+		unload given tile
+		traverse all tiles in the scene, 
+		find given tile, delete it
+	**/
 	unloadTile(filename);
 	for (std::vector<Ogre::String>::iterator iter = mRenderedTiles.begin();
 		iter != mRenderedTiles.end(); iter++)
@@ -90,21 +140,33 @@ void cfMMOCfore::splitTile(Ogre::String filename)
 		}
 	}
 
+	/**
+		create children for given tile, 
+		and execute the process of splitting
+	**/
 	Ogre::String sub_name[4] = {"/q", "/r", "/s", "/t"};
-
 	for (int i = 0; i < 4; i++)
 	{
 		createTile(filename + sub_name[i]);
 		mRenderedTiles.push_back(filename + sub_name[i]);
 	}
-
 	mRQTS->split(filename);
 }
 
+/**
+@remarks
+	split children of given tile
+@par
+	filename	name of given tile
+**/
 void cfMMOCfore::mergeTile(Ogre::String filename)
 {
+	/**
+		unload children of given til
+		traverse all tiles in the scene, 
+		find children of given tile, delete them
+	**/
 	Ogre::String sub_name[4] = {"/q", "/r", "/s", "/t"};
-
 	for (int i = 0; i < 4; i++)
 	{
 		unloadTile(filename + sub_name[i]);
@@ -119,13 +181,22 @@ void cfMMOCfore::mergeTile(Ogre::String filename)
 		}
 	}
 
+	/**
+		create given tile, 
+		and execute the process of merging
+	**/
 	createTile(filename, 15);
 	mRenderedTiles.push_back(filename);
-
-    mRQTS->merge(filename);
+        mRQTS->merge(filename);
 
 }
 
+/**
+@remarks
+      	load given tile into memory
+@par
+	filename	name of given tile
+**/
 void cfMMOCfore::loadTile(Ogre::String filename)
 {
 	MeshPtr pMesh = static_cast<MeshPtr>(MeshManager::getSingleton().getByName(
@@ -136,14 +207,29 @@ void cfMMOCfore::loadTile(Ogre::String filename)
 	pTex->load();
 }
 
+/**
+@remarks
+       	unload given tile
+@par
+	filename	name of given tile
+	full		boolean indicates fully remove the all corresponding meshes
+			(external mesh and boundary adaptive mesh), material and texture
+			or just remove boundary adaptive mesh and material
+**/
 void cfMMOCfore::unloadTile(Ogre::String filename, bool full)
 {
+	/**
+    		unload and delete given from scene
+	**/
 	SceneNode *node = mSceneMgr->getSceneNode(filename);
 	node->detachAllObjects();
 	mSceneMgr->destroySceneNode(filename);
 	mSceneMgr->destroyEntity(filename);
 	MeshPtr pMesh;
 	ResourcePtr pRes;
+	/**
+    		unload and delete external mesh
+	**/
 	if (full)
 	{
 	        pMesh = static_cast<MeshPtr>(MeshManager::getSingleton().getByName(
@@ -152,11 +238,17 @@ void cfMMOCfore::unloadTile(Ogre::String filename, bool full)
         	pRes = static_cast<ResourcePtr>(pMesh);
         	MeshManager::getSingleton().remove(pRes);
 	}
+    	/**
+    		unload and delete boundary adaptive mesh
+    	**/
 	pMesh = static_cast<MeshPtr>(MeshManager::getSingleton().getByName(
 		Ogre::String("combined_") + filename + Ogre::String(".mesh"), ResourceGroupManager::INTERNAL_RESOURCE_GROUP_NAME));
 	pMesh->unload();
 	pRes = static_cast<ResourcePtr>(pMesh);
 	MeshManager::getSingleton().remove(pRes);
+    	/**
+    		unload and delete material for given tile
+    	**/
 	{
 		MaterialPtr mat = static_cast<MaterialPtr>(MaterialManager::getSingleton().getByName(filename +
             		Ogre::StringConverter::toString(mHashMatCount[filename])));
@@ -164,6 +256,9 @@ void cfMMOCfore::unloadTile(Ogre::String filename, bool full)
 		pRes = static_cast<ResourcePtr>(mat);
 		MaterialManager::getSingleton().remove(pRes);
 	}
+    	/**
+    		unload and delete texture for given tile
+    	**/
 	if (full)
 	{
 		TexturePtr pTex = static_cast<TexturePtr>(TextureManager::getSingleton().getByName(
@@ -174,15 +269,29 @@ void cfMMOCfore::unloadTile(Ogre::String filename, bool full)
 	}
 }
 
+/**
+@remarks
+       	create given tile
+@par
+	filename	name of given tile
+	mask		bitwise variable indicates the density of triangles on boundaries
+			0000b means low density
+			1111b means high density
+**/
 void cfMMOCfore::createTile(Ogre::String filename, unsigned char mask)
 {
 	MeshPtr pMesh;
         pMesh = static_cast<MeshPtr>(MeshManager::getSingleton().getByName(
             mComMeshFolder + filename + Ogre::String(".mesh"), ResourceGroupManager::INTERNAL_RESOURCE_GROUP_NAME));
 	MeshPtr pCbMesh;
+
+	/**
+		create manual mesh (name with combined_$filename$) and corresponding submesh,
+		and copy vertex data from external loaded mesh (name with $filename$)
+	**/
 	{
-        pCbMesh = MeshManager::getSingleton().createManual(
-            Ogre::String("combined_") + filename + Ogre::String(".mesh"), ResourceGroupManager::INTERNAL_RESOURCE_GROUP_NAME);
+	        pCbMesh = MeshManager::getSingleton().createManual(
+        	    Ogre::String("combined_") + filename + Ogre::String(".mesh"), ResourceGroupManager::INTERNAL_RESOURCE_GROUP_NAME);
 	}
 	pCbMesh->sharedVertexData = new VertexData();
 	pCbMesh->sharedVertexData->vertexCount = pMesh->sharedVertexData->vertexCount;
@@ -213,6 +322,10 @@ void cfMMOCfore::createTile(Ogre::String filename, unsigned char mask)
         (mask & 8) ? 4:0,
         (mask & 4) ? 4:0};
 
+	/**
+		copy index data from external loaded mesh (name with $filename$) 
+		to manual mesh (name with combined_$filename$)
+	**/
 	SubMesh* pSubMesh = pCbMesh->createSubMesh("0");
 	size_t indexCount = pMesh->getSubMesh(0)->indexData->indexCount +
 		pMesh->getSubMesh(1 + mask_offset[0])->indexData->indexCount +
@@ -233,6 +346,9 @@ void cfMMOCfore::createTile(Ogre::String filename, unsigned char mask)
 		pMesh->getSubMesh(0)->indexData->indexBuffer->getSizeInBytes());
 	pMesh->getSubMesh(0)->indexData->indexBuffer->unlock();
 	size_t indexOffset = pMesh->getSubMesh(0)->indexData->indexCount;
+	/**
+		manully process boundaries for given variable mask
+	**/
 	for (int i = 1; i <= 4; i++)
 	{
 		unsigned short* pSrcIndices= static_cast<unsigned short*>(
@@ -248,6 +364,12 @@ void cfMMOCfore::createTile(Ogre::String filename, unsigned char mask)
 	pCbMesh->_setBounds(pMesh->getBounds());
 	pCbMesh->load();
 
+	/**
+		create entity from mesh, 
+		create scene node and attach the entity
+		create material from a base material named 'tb_terra_sph_simple'
+		set the color by a unallocated color in the default pass in material
+	**/
     	Entity *ent;
 	{
 		ent = mSceneMgr->createEntity(filename,
@@ -277,6 +399,12 @@ void cfMMOCfore::createTile(Ogre::String filename, unsigned char mask)
 	}
 }
 
+/**
+@remarks
+       	rendering main loop
+@par
+	evt	FrameEvent object
+**/
 bool cfMMOCfore::frameRenderingQueued(const Ogre::FrameEvent& evt)
 {
 
