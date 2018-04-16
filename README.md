@@ -46,7 +46,13 @@ Install the following dependences (given versions are not mandatory) for cfMMOC:
  * `mesa-libGLU-9.0.0-13.fc27.x86_64`
  * `poco-foundation-1.7.8p3-2.fc27.x86_64` for supporting multi-threading
 
+In addtion, OGRE is also a dependency for cfMMOC, headers and binary of OGRE v1.9 is included in this repository. 
+For compiling binary of OGRE, please refers to https://github.com/OGRECave/ogre. 
+Dependencies for cfMMOC are all open source except an implementation of a Restricted QuadTreeS library, libRQTS.so.
 
+We claim that libRQTS.so does not depend on any open source library or software except GNU C Library. 
+None of libRQTS's dependency requires libRQTS to be an open source library. 
+We CURRENTLY do not make libRQTS as an open source due to intellectual property issues.
 
 ## Compilation
 Install compiler and dependences (given versions are not mandatory) for building cfMMOC:
