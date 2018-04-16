@@ -17,7 +17,7 @@ using namespace Ogre;
 using namespace OgreBites;
 
 /**
-  @brief  A class for scene management and terrain rendering.
+  @brief  A class for scene management and terrain rendering in back-end process.
 **/
 
 /**
@@ -119,27 +119,37 @@ protected:
 	/**
     	@remarks
         	split given tile
+	@par
+		filename	name of given tile
     	**/
 	void splitTile(Ogre::String filename);
 	/**
     	@remarks
         	split children of given tile
+	@par
+		filename	name of given tile
     	**/
 	void mergeTile(Ogre::String filename);
 
 	/**
     	@remarks
         	load given tile into memory
+	@par
+		filename	name of given tile
     	**/
 	void loadTile(Ogre::String filename);
 	/**
     	@remarks
         	create given tile
+	@par
+		filename	name of given tile
     	**/
 	void createBackTile(Ogre::String filename);
 	/**
     	@remarks
         	unload given tile
+	@par
+		filename	name of given tile
     	**/
 	void unloadBackTile(Ogre::String filename);
 
@@ -151,11 +161,15 @@ protected:
 	/**
     	@remarks
         	assign an unallocated color for given tile
+	@par
+		filename	name of given tile
     	**/
 	Ogre::ColourValue getAnUnusedColor(Ogre::String filename);
 	/**
     	@remarks
         	retrieve color which is not used for given tile
+	@par
+		filename	name of given tile
     	**/
 	void retrieveColor(Ogre::String filename);
 	/**
@@ -198,7 +212,7 @@ protected:
 	// field of view of viewport along y direction
 	Ogre::Real mBackFovY;
 
-	// pointer to tile fetching thread
+	// pointer to tile fetching object for back-end process
 	BBackLoadThread* mBackThread;
 	// initial point of camera and the point of look target
 	Ogre::Vector3 mInitEye, mInitTarget;
