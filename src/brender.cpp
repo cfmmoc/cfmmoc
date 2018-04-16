@@ -10,7 +10,7 @@
 #include <sys/shm.h>
 
 /**
-  @brief  A class for scene management and terrain rendering.
+  @brief  A class for scene management and terrain rendering in back-end process.
 **/
 
 /**
