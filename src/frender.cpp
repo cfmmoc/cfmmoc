@@ -8,16 +8,17 @@ cfMMOCfore::cfMMOCfore()
 	mInfo["Description"] = "A Demo of cfMMOC.";
 	mInfo["Thumbnail"] = "cfmmoc-fore.png";
 	mInfo["Category"] = "cfMMOC Terrain";
+	
+	mComMeshFolder = "com/";
+	mTexFolder = "tex/";
+	mTextureExtension = ".dds";
 
 	mInitLoadOver = false;
-	mHideAABB = false;
-	mHideInvisible = true;
 	mInitEye = Ogre::Vector3(3000000, 700000, 5800000);
 	mInitTarget = Ogre::Vector3(0, 0, 0);
 	mClipDist = Ogre::Vector2(100, 20000000);
 	mLoggingLevel = LL_LOW;
 	mCameraStyle = CS_FREELOOK;
-	mYawAxis = Vector3::UNIT_Y;
 
 	mSharedMemCam = NULL;
 
@@ -29,6 +30,7 @@ cfMMOCfore::cfMMOCfore()
 
 	curl_global_init(CURL_GLOBAL_DEFAULT);
 
+	artorbit = 0.0;
 }
 
 void cfMMOCfore::checkLoadReq()
@@ -246,31 +248,28 @@ void cfMMOCfore::createTile(Ogre::String filename, unsigned char mask)
 	pCbMesh->_setBounds(pMesh->getBounds());
 	pCbMesh->load();
 
-    Entity *ent;
+    	Entity *ent;
 	{
-        ent = mSceneMgr->createEntity(filename,
-            Ogre::String("combined_") + filename + Ogre::String(".mesh"));
-        SceneNode *node = mSceneMgr->getRootSceneNode()->createChildSceneNode(filename);
-        node->attachObject(ent);
-        if (!mHideAABB)
-            node->showBoundingBox(true);
-        if (filename.compare("ussttrqqq") == 0)
-            node->showBoundingBox(true);
+		ent = mSceneMgr->createEntity(filename,
+		    Ogre::String("combined_") + filename + Ogre::String(".mesh"));
+		SceneNode *node = mSceneMgr->getRootSceneNode()->createChildSceneNode(filename);
+		node->attachObject(ent);
+		node->showBoundingBox(true);
 	}
 	{
-        MaterialPtr mat;
+        	MaterialPtr mat;
 		MaterialPtr basemat = Ogre::MaterialManager::getSingletonPtr()->getByName("tb_terra_sph_complex");
 		{
-            HashMap<Ogre::String, unsigned int>::iterator matit = mHashMatCount.find(filename);
-            if (matit == mHashMatCount.end())
-            {
-                mHashMatCount[filename] = 0;
-            }
-            else
-            {
-                mHashMatCount[filename]++;
-            }
-            mat = basemat->clone(filename + Ogre::StringConverter::toString(mHashMatCount[filename]));
+		    HashMap<Ogre::String, unsigned int>::iterator matit = mHashMatCount.find(filename);
+		    if (matit == mHashMatCount.end())
+		    {
+			mHashMatCount[filename] = 0;
+		    }
+		    else
+		    {
+			mHashMatCount[filename]++;
+		    }
+		    mat = basemat->clone(filename + Ogre::StringConverter::toString(mHashMatCount[filename]));
 		}
 		mat.getPointer()->getTechnique(0)->getPass(0)->getTextureUnitState(0)->setTextureName(
 			mTexFolder + filename + mTextureExtension);
@@ -325,7 +324,6 @@ bool cfMMOCfore::frameRenderingQueued(const Ogre::FrameEvent& evt)
     mCamera->lookAt(artpos);
 
 #if 1
-        if (mHideInvisible)
     {
         for (unsigned int i = 0; i < mTilesVisbleReg.mLength; i++)
         {
