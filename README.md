@@ -14,8 +14,8 @@ cfMMOC library is a planet-scale out-of-core terrain rendering framework on top 
 
 | Build | Status |
 |-------|--------|
-| Fedora 64-bit | Building Pass |
-| Ubuntu 64-bit | Building Pass |
+| Fedora 64-bit | ![Building Pass](https://github.com/cfmmoc/cfmmoc-mics/blob/master/build-passing.png) |
+| Ubuntu 64-bit | ![Building Pass](https://github.com/cfmmoc/cfmmoc-mics/blob/master/build-passing.png) |
 
 ## Features
 
