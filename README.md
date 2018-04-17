@@ -12,7 +12,10 @@ cfMMOC represents a consolidated framework of multi-resolution management and oc
 
 cfMMOC library is a planet-scale out-of-core terrain rendering framework on top of OGRE v1.9.
 
-
+| Build | Status |
+|-------|--------|
+| Fedora 64-bit | Building Pass |
+| Ubuntu 64-bit | Building Pass |
 
 ## Features
 
