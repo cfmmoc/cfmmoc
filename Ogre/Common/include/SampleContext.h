@@ -35,7 +35,6 @@
 #include "OgreOverlaySystem.h"
 
 #include "cURLArchive.h"
-#include "wURLArchive.h"
 
 // Static plugins declaration section
 // Note that every entry in here adds an extra header / library dependency
@@ -258,7 +257,6 @@ namespace OgreBites
 #else
 			createRoot();
 			Ogre::ArchiveManager::getSingleton().addArchiveFactory(new cURLArchiveFactory());
-			Ogre::ArchiveManager::getSingleton().addArchiveFactory(new wURLArchiveFactory());
 #if OGRE_PLATFORM == OGRE_PLATFORM_NACL
             mNextRenderer = mRoot->getAvailableRenderers()[0]->getName();
 #else
