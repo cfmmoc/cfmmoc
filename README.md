@@ -100,11 +100,11 @@ Change directory to bin/ using `cd bin/`.
 
 Run `./cfMMOC` in terminal, and then select cfMMOC-back.
 
-Run `./cfMMOC` in a new terminal, and then select cfMMOC-fore.
+Run `./cfMMOC` in a new terminal, and then select cfMMOC-fore, 1280x700 resolution is used as default in cfMMOC-fore, you could change it in `frender.cpp`.
 
-As `./cfMMOC` runs for the first time, do not select full screen mode in configuration dialog, and 800x600 resolution is recommended.
+As `./cfMMOC` runs for the first time, do not select full screen mode in configuration dialog, and 800x600 (or lower) resolution is recommended.
 
-If `./cfMMOC` returns `./cfMMOC: error while loading shared libraries: libOgreMain.so.1.9.0: cannot open shared object file: No such file or directory`, please run `./cfMMOC` as `LD_PRELOAD=./libOgreMain.so.1.9.0:./libOgreOverlay.so.1.9.0 ./cfMMOC`.
+If `./cfMMOC` returns `./cfMMOC: error while loading shared libraries: libOgreMain.so.1.9.0: cannot open shared object file: No such file or directory` or similar error, please run `./cfMMOC` as `LD_PRELOAD=./libOgreMain.so.1.9.0:./libOgreOverlay.so.1.9.0 ./cfMMOC`.
 
 ## Configuration
 
