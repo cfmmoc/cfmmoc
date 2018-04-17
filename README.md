@@ -62,9 +62,20 @@ Install compiler and dependences (given versions are not mandatory) for building
  * `ois-devel-1.3.0-14.fc27.x86_64`
  * `libcurl-devel-7.55.1-8.fc27.x86_64`
 
-Download the source (https://github.com/cfmmoc/cfmmoc/archive/master.zip), extract it, and build cfMMOC as follows:
+Download the source (https://github.com/cfmmoc/cfmmoc/archive/master.zip), extract it.
 
-After installing the prerequisites, perform the following:
+Directories are listed as follows:
+
+directory | description
+---- | ---
+  Ogre/		|	headers of OGRE
+  bin/		|	binary files
+  browser/	|	headers and sources for `./bin/cfMMOC`, the executable entry of cfMMOC
+  include/	|	headers for shared libraries `./bin/cfMMOC-back.so.1.9.0` and `./bin/cfMMOC-fore.so.1.9.0`
+  media/	|	run-time resources
+  src/		|	sources for `./bin/cfMMOC-back.so.1.9.0` and `./bin/cfMMOC-fore.so.1.9.0`
+
+After installing the prerequisites, build cfMMOC as follows::
 
 	mkdir obj 
 	cd obj/
