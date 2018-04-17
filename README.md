@@ -96,13 +96,15 @@ Install pre-requisites for compiling:
 
 ## Running cfMMOC:
 
-    `cd bin/`
-    
-    `./cfMMOC #then start cfMMOC-back, when running for the first time, do not select full screen mode, and 800x600 resolution is recommended`
-    
-    `./cfMMOC #then start cfMMOC-fore`
+Change directory to bin/ using `cd bin/`.
 
+Run `./cfMMOC`, and then start cfMMOC-back.
 
+Run `./cfMMOC`, and then start cfMMOC-fore.
+
+As `./cfMMOC` runs for the first time, do not select full screen mode in configuration dialog, and 800x600 resolution is recommended.
+
+If `./cfMMOC` returns `./cfMMOC: error while loading shared libraries: libOgreMain.so.1.9.0: cannot open shared object file: No such file or directory`, please run as `LD_PRELOAD=./libOgreMain.so.1.9.0:./libOgreOverlay.so.1.9.0 ./cfMMOC`.
 
 ## Configuration
 
