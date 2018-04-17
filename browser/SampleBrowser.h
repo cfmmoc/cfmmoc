@@ -1636,4 +1636,432 @@ protected:
 			mTrayMgr->showLogo(TL_RIGHT);
 			mTrayMgr->createSeparator(TL_RIGHT, "LogoSep");
 			mTrayMgr->createButton(TL_RIGHT, "StartStop", "Start Sample", 120);
-#if OGRE_PLATFORM
+#if OGRE_PLATFORM != OGRE_PLATFORM_NACL
+#	if	OGRE_PLATFORM != OGRE_PLATFORM_WINRT
+			mTrayMgr->createButton(TL_RIGHT, "UnloadReload", mLoadedSamples.empty() ? "Reload Samples" : "Unload Samples");
+            mTrayMgr->createButton(TL_RIGHT, "Configure", "Configure");
+#	endif // OGRE_PLATFORM_WINRT
+			mTrayMgr->createButton(TL_RIGHT, "Quit", "Quit");
+#endif // OGRE_PLATFORM_NACL
+
+			// create sample viewing controls
+			mTitleLabel = mTrayMgr->createLabel(TL_LEFT, "SampleTitle", "");
+#if (OGRE_PLATFORM == OGRE_PLATFORM_APPLE_IOS) || (OGRE_PLATFORM == OGRE_PLATFORM_ANDROID)
+			mDescBox = mTrayMgr->createTextBox(TL_LEFT, "SampleInfo", "Sample Info", 120, 100);
+			mCategoryMenu = mTrayMgr->createThickSelectMenu(TL_LEFT, "CategoryMenu", "Select Category", 120, 10);
+			mSampleMenu = mTrayMgr->createThickSelectMenu(TL_LEFT, "SampleMenu", "Select Sample", 120, 10);
+			mSampleSlider = mTrayMgr->createThickSlider(TL_LEFT, "SampleSlider", "Slide Samples", 120, 42, 0, 0, 0);
+#else
+			mDescBox = mTrayMgr->createTextBox(TL_LEFT, "SampleInfo", "Sample Info", 250, 208);
+			mCategoryMenu = mTrayMgr->createThickSelectMenu(TL_LEFT, "CategoryMenu", "Select Category", 250, 10);
+			mSampleMenu = mTrayMgr->createThickSelectMenu(TL_LEFT, "SampleMenu", "Select Sample", 250, 10);
+			mSampleSlider = mTrayMgr->createThickSlider(TL_LEFT, "SampleSlider", "Slide Samples", 250, 80, 0, 0, 0);
+#endif
+			/* Sliders do not notify their listeners on creation, so we manually call the callback here
+			to format the slider value correctly. */
+			sliderMoved(mSampleSlider);
+
+			// create configuration screen button tray
+			mTrayMgr->createButton(TL_NONE, "Apply", "Apply Changes");
+			mTrayMgr->createButton(TL_NONE, "Back", "Go Back");
+
+			// create configuration screen label and renderer menu
+			mTrayMgr->createLabel(TL_NONE, "ConfigLabel", "Configuration");
+#if (OGRE_PLATFORM == OGRE_PLATFORM_APPLE_IOS) || (OGRE_PLATFORM == OGRE_PLATFORM_ANDROID) || (OGRE_PLATFORM == OGRE_PLATFORM_WINRT)
+			mRendererMenu = mTrayMgr->createLongSelectMenu(TL_NONE, "RendererMenu", "Render System", 216, 115, 10);
+#else
+			mRendererMenu = mTrayMgr->createLongSelectMenu(TL_NONE, "RendererMenu", "Render System", 450, 240, 10);
+#endif
+			mTrayMgr->createSeparator(TL_NONE, "ConfigSeparator");
+
+			// populate render system names
+			Ogre::StringVector rsNames;
+			Ogre::RenderSystemList rsList = mRoot->getAvailableRenderers();
+			for (unsigned int i = 0; i < rsList.size(); i++)
+			{
+				rsNames.push_back(rsList[i]->getName());
+			}
+			mRendererMenu->setItems(rsNames);
+
+			populateSampleMenus();
+		}
+
+		/*-----------------------------------------------------------------------------
+		| Populates home menus with loaded samples.
+		-----------------------------------------------------------------------------*/
+		virtual void populateSampleMenus()
+		{
+			Ogre::StringVector categories;
+			for (std::set<Ogre::String>::iterator i = mSampleCategories.begin(); i != mSampleCategories.end(); i++)
+				categories.push_back(*i);
+
+			mCategoryMenu->setItems(categories);
+			if (mCategoryMenu->getNumItems() != 0)
+                mCategoryMenu->selectItem(0);
+			else
+                itemSelected(mCategoryMenu);   // if there are no items, we can't select one, so manually invoke callback
+		}
+
+		/*-----------------------------------------------------------------------------
+		| Overrides to recover by last sample's index instead.
+		-----------------------------------------------------------------------------*/
+		virtual void recoverLastSample()
+		{
+			// restore the view while we're at it too
+			mCategoryMenu->selectItem(mLastViewCategory);
+			mSampleMenu->selectItem(mLastViewTitle);
+
+			if (mLastSampleIndex != -1)
+			{
+				int index = -1;
+				for (SampleSet::iterator i = mLoadedSamples.begin(); i != mLoadedSamples.end(); i++)
+				{
+					index++;
+					if (index == mLastSampleIndex)
+					{
+						runSample(*i);
+						(*i)->restoreState(mLastSampleState);
+						mLastSample = 0;
+						mLastSampleIndex = -1;
+						mLastSampleState.clear();
+					}
+				}
+
+				pauseCurrentSample();
+				mTrayMgr->showAll();
+			}
+
+			buttonHit((Button*)mTrayMgr->getWidget("Configure"));
+		}
+
+		/*-----------------------------------------------------------------------------
+		| Extends reconfigure to save the view and the index of last sample run.
+		-----------------------------------------------------------------------------*/
+		virtual void reconfigure(const Ogre::String& renderer, Ogre::NameValuePairList& options)
+		{
+			mLastViewCategory = mCategoryMenu->getSelectionIndex();
+			mLastViewTitle = mSampleMenu->getSelectionIndex();
+
+			mLastSampleIndex = -1;
+			unsigned int index = -1;
+			for (SampleSet::iterator i = mLoadedSamples.begin(); i != mLoadedSamples.end(); i++)
+			{
+				index++;
+				if (*i == mCurrentSample)
+				{
+					mLastSampleIndex = index;
+					break;
+				}
+			}
+
+			SampleContext::reconfigure(renderer, options);
+		}
+    public:
+		/*-----------------------------------------------------------------------------
+		| Extends shutdown to destroy dummy scene and tray interface.
+		-----------------------------------------------------------------------------*/
+		virtual void shutdown()
+		{
+#if ENABLE_SHADERS_CACHE_SAVE == 1
+			if (Ogre::GpuProgramManager::getSingleton().isCacheDirty())
+			{
+				Ogre::String path = mFSLayer->getWritablePath(getShaderCacheFileName());
+				FILE * outFile = fopen(path.c_str(), "wb");
+				if (outFile)
+				{
+					Ogre::LogManager::getSingleton().logMessage("Writing shader cache to ");
+					Ogre::LogManager::getSingleton().logMessage(path.c_str());
+            		Ogre::DataStreamPtr ostream(new Ogre::FileHandleDataStream(path.c_str(), outFile, Ogre::DataStream::WRITE));
+            		Ogre::GpuProgramManager::getSingleton().saveMicrocodeCache(ostream);
+            		ostream->close();
+				}
+            }
+#endif
+
+#if OGRE_PLATFORM == OGRE_PLATFORM_APPLE_IOS
+            [mGestureView release];
+#endif
+			if (mTrayMgr)
+			{
+				delete mTrayMgr;
+				mTrayMgr = 0;
+			}
+
+			if (!mCurrentSample && mRoot->getRenderSystem() != NULL) destroyDummyScene();
+
+			mCategoryMenu = 0;
+			mSampleMenu = 0;
+			mSampleSlider = 0;
+			mTitleLabel = 0;
+			mDescBox = 0;
+			mRendererMenu = 0;
+			mHiddenOverlays.clear();
+			mThumbs.clear();
+			mCarouselPlace = 0;
+            mWindow = 0;
+
+			SampleContext::shutdown();
+
+			unloadSamples();
+
+#ifdef INCLUDE_RTSHADER_SYSTEM
+			// Destroy the RT Shader System.
+			destroyRTShaderSystem();
+#endif // INCLUDE_RTSHADER_SYSTEM
+
+		}
+    protected:
+		/*-----------------------------------------------------------------------------
+		| Destroys dummy scene.
+		-----------------------------------------------------------------------------*/
+		virtual void destroyDummyScene()
+		{
+            if(!mRoot->hasSceneManager("DummyScene"))
+                return;
+
+			Ogre::SceneManager*  dummyScene = mRoot->getSceneManager("DummyScene");
+#ifdef INCLUDE_RTSHADER_SYSTEM
+			mShaderGenerator->removeSceneManager(dummyScene);
+#endif
+			dummyScene->removeRenderQueueListener(mOverlaySystem);
+			mWindow->removeAllViewports();
+			mRoot->destroySceneManager(dummyScene);
+		}
+
+		/*-----------------------------------------------------------------------------
+		| Extend to temporarily hide a sample's overlays while in the pause menu.
+		-----------------------------------------------------------------------------*/
+		virtual void pauseCurrentSample()
+		{
+			SampleContext::pauseCurrentSample();
+
+			Ogre::OverlayManager::OverlayMapIterator it = Ogre::OverlayManager::getSingleton().getOverlayIterator();
+			mHiddenOverlays.clear();
+
+			while (it.hasMoreElements())
+			{
+				Ogre::Overlay* o = it.getNext();
+				if (o->isVisible())                  // later, we don't want to unhide the initially hidden overlays
+				{
+					mHiddenOverlays.push_back(o);    // save off hidden overlays so we can unhide them later
+					o->hide();
+				}
+			}
+		}
+
+		/*-----------------------------------------------------------------------------
+		| Extend to unhide all of sample's temporarily hidden overlays.
+		-----------------------------------------------------------------------------*/
+		virtual void unpauseCurrentSample()
+		{
+			SampleContext::unpauseCurrentSample();
+
+			for (std::vector<Ogre::Overlay*>::iterator i = mHiddenOverlays.begin(); i != mHiddenOverlays.end(); i++)
+			{
+				(*i)->show();
+			}
+
+			mHiddenOverlays.clear();
+		}
+
+		/*-----------------------------------------------------------------------------
+		| Get the name of the RTSS shader cache file
+		-----------------------------------------------------------------------------*/
+		virtual Ogre::String getShaderCacheFileName()
+		{
+#if OGRE_DEBUG_MODE
+			return "cache_d.bin";
+#else
+			return "cache.bin";
+#endif
+		}
+
+#ifdef INCLUDE_RTSHADER_SYSTEM
+
+		/*-----------------------------------------------------------------------------
+		| Initialize the RT Shader system.
+		-----------------------------------------------------------------------------*/
+		virtual bool initialiseRTShaderSystem(Ogre::SceneManager* sceneMgr)
+		{
+			if (Ogre::RTShader::ShaderGenerator::initialize())
+			{
+				mShaderGenerator = Ogre::RTShader::ShaderGenerator::getSingletonPtr();
+
+				mShaderGenerator->addSceneManager(sceneMgr);
+
+#if OGRE_PLATFORM != OGRE_PLATFORM_ANDROID && OGRE_PLATFORM != OGRE_PLATFORM_NACL && OGRE_PLATFORM != OGRE_PLATFORM_WINRT
+				// Setup core libraries and shader cache path.
+				Ogre::StringVector groupVector = Ogre::ResourceGroupManager::getSingleton().getResourceGroups();
+				Ogre::StringVector::iterator itGroup = groupVector.begin();
+				Ogre::StringVector::iterator itGroupEnd = groupVector.end();
+				Ogre::String shaderCoreLibsPath;
+				Ogre::String shaderCachePath;
+
+				for (; itGroup != itGroupEnd; ++itGroup)
+				{
+					Ogre::ResourceGroupManager::LocationList resLocationsList = Ogre::ResourceGroupManager::getSingleton().getResourceLocationList(*itGroup);
+					Ogre::ResourceGroupManager::LocationList::iterator it = resLocationsList.begin();
+					Ogre::ResourceGroupManager::LocationList::iterator itEnd = resLocationsList.end();
+					bool coreLibsFound = false;
+
+					// Try to find the location of the core shader lib functions and use it
+					// as shader cache path as well - this will reduce the number of generated files
+					// when running from different directories.
+					for (; it != itEnd; ++it)
+					{
+						if ((*it)->archive->getName().find("RTShaderLib") != Ogre::String::npos)
+						{
+							shaderCoreLibsPath = (*it)->archive->getName() + "/cache/";
+							shaderCachePath = shaderCoreLibsPath;
+							coreLibsFound = true;
+							break;
+						}
+					}
+					// Core libs path found in the current group.
+					if (coreLibsFound)
+						break;
+				}
+
+				// Core shader libs not found -> shader generating will fail.
+				if (shaderCoreLibsPath.empty())
+					return false;
+
+#ifdef _RTSS_WRITE_SHADERS_TO_DISK
+				// Set shader cache path.
+#if OGRE_PLATFORM == OGRE_PLATFORM_APPLE_IOS
+                shaderCachePath = Ogre::macCachePath();
+#elif OGRE_PLATFORM == OGRE_PLATFORM_APPLE
+                shaderCachePath = Ogre::macCachePath() + "/org.ogre3d.RTShaderCache";
+#endif
+				mShaderGenerator->setShaderCachePath(shaderCachePath);
+#endif
+#endif
+				// Create and register the material manager listener if it doesn't exist yet.
+				if (mMaterialMgrListener == NULL) {
+					mMaterialMgrListener = new ShaderGeneratorTechniqueResolverListener(mShaderGenerator);
+					Ogre::MaterialManager::getSingleton().addListener(mMaterialMgrListener);
+				}
+			}
+
+			return true;
+		}
+
+		/*-----------------------------------------------------------------------------
+		| Destroy the RT Shader system.
+		-----------------------------------------------------------------------------*/
+		virtual void destroyRTShaderSystem()
+		{
+			// Restore default scheme.
+			Ogre::MaterialManager::getSingleton().setActiveScheme(Ogre::MaterialManager::DEFAULT_SCHEME_NAME);
+
+			// Unregister the material manager listener.
+			if (mMaterialMgrListener != NULL)
+			{
+				Ogre::MaterialManager::getSingleton().removeListener(mMaterialMgrListener);
+				delete mMaterialMgrListener;
+				mMaterialMgrListener = NULL;
+			}
+
+			// Destroy RTShader system.
+			if (mShaderGenerator != NULL)
+			{
+				Ogre::RTShader::ShaderGenerator::destroy();
+				mShaderGenerator = NULL;
+			}
+		}
+#endif // INCLUDE_RTSHADER_SYSTEM
+
+        SimpleTextB *mdt;
+
+        bool mNoGrabInput;                             // don't grab input devices
+		SdkTrayManager* mTrayMgr;                      // SDK tray interface
+#ifdef OGRE_STATIC_LIB
+        PluginMap mPluginNameMap;                      // A structure to map plugin names to class types
+#endif
+		Ogre::StringVector mLoadedSamplePlugins;       // loaded sample plugins
+		std::set<Ogre::String> mSampleCategories;      // sample categories
+		SampleSet mLoadedSamples;                      // loaded samples
+		SelectMenu* mCategoryMenu;                     // sample category select menu
+		SelectMenu* mSampleMenu;                       // sample select menu
+		Slider* mSampleSlider;                         // sample slider bar
+		Label* mTitleLabel;                            // sample title label
+		TextBox* mDescBox;                             // sample description box
+		SelectMenu* mRendererMenu;                     // render system selection menu
+		std::vector<Ogre::Overlay*> mHiddenOverlays;   // sample overlays hidden for pausing
+		std::vector<Ogre::OverlayContainer*> mThumbs;  // sample thumbnails
+		Ogre::Real mCarouselPlace;                     // current state of carousel
+		int mLastViewTitle;                            // last sample title viewed
+		int mLastViewCategory;                         // last sample category viewed
+		int mLastSampleIndex;                          // index of last sample running
+		int mStartSampleIndex;                         // directly starts the sample with the given index
+#if (OGRE_PLATFORM == OGRE_PLATFORM_WINRT)
+		Platform::Agile<Windows::UI::Core::CoreWindow> mNativeWindow;
+#	if (OGRE_WINRT_TARGET_TYPE == DESKTOP_APP)
+		Windows::UI::Xaml::Shapes::Rectangle^ mNativeControl;
+#	endif // (OGRE_WINRT_TARGET_TYPE == DESKTOP_APP)
+#endif // (OGRE_PLATFORM == OGRE_PLATFORM_WINRT)
+#if OGRE_PLATFORM == OGRE_PLATFORM_NACL
+        pp::Instance* mNaClInstance;
+        pp::CompletionCallback* mNaClSwapCallback;
+        OIS::FactoryCreator * mOisFactory;
+        Ogre::uint32 mInitWidth;
+        Ogre::uint32 mInitHeight;
+#endif
+#ifdef INCLUDE_RTSHADER_SYSTEM
+		Ogre::RTShader::ShaderGenerator*			mShaderGenerator;			// The Shader generator instance.
+		ShaderGeneratorTechniqueResolverListener*	mMaterialMgrListener;		// Shader generator material manager listener.
+#endif // INCLUDE_RTSHADER_SYSTEM
+    public:
+#if OGRE_PLATFORM == OGRE_PLATFORM_APPLE_IOS
+        SampleBrowserGestureView *mGestureView;
+#endif
+        bool mIsShuttingDown;
+	};
+}
+
+#if OGRE_PLATFORM == OGRE_PLATFORM_APPLE_IOS
+
+@implementation SampleBrowserGestureView
+
+@synthesize mBrowser;
+
+- (BOOL)canBecomeFirstResponder
+{
+    return YES;
+}
+
+- (void)dealloc {
+    [super dealloc];
+}
+
+- (void)motionBegan:(UIEventSubtype)motion withEvent:(UIEvent *)event {
+    if(mBrowser && event.type == UIEventTypeMotion && event.subtype == UIEventSubtypeMotionShake)
+        mBrowser->motionBegan();
+
+    if ([super respondsToSelector:@selector(motionBegan:withEvent:)]) {
+        [super motionBegan:motion withEvent:event];
+    }
+}
+
+- (void)motionEnded:(UIEventSubtype)motion withEvent:(UIEvent *)event {
+    if(mBrowser && event.type == UIEventTypeMotion && event.subtype == UIEventSubtypeMotionShake)
+        mBrowser->motionEnded();
+
+    if ([super respondsToSelector:@selector(motionEnded:withEvent:)]) {
+        [super motionEnded:motion withEvent:event];
+    }
+}
+
+- (void)motionCancelled:(UIEventSubtype)motion withEvent:(UIEvent *)event {
+    if(mBrowser && event.type == UIEventTypeMotion && event.subtype == UIEventSubtypeMotionShake)
+        mBrowser->motionCancelled();
+
+    if ([super respondsToSelector:@selector(motionCancelled:withEvent:)]) {
+        [super motionCancelled:motion withEvent:event];
+    }
+}
+@end
+
+#endif
+
+#endif
