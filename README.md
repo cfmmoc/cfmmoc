@@ -51,7 +51,7 @@ Install the following dependences (given versions are not mandatory) for cfMMOC:
 
 In addtion, OGRE is also a dependency for cfMMOC, headers and binary of OGRE v1.9 is included in this repository. 
 For compiling binary of OGRE, please refers to https://github.com/OGRECave/ogre. 
-ORGE should be compiled with multithreading support with config OGRE_THREAD_SUPPORT = 2 and OGRE_THREAD_PROVIDER = 2 (i.e., POCO libraries as thread provider).
+ORGE should be compiled with multithreading support by configuring OGRE_THREAD_SUPPORT = 2 and OGRE_THREAD_PROVIDER = 2 (i.e., using POCO libraries as thread provider).
 
 Dependencies for cfMMOC are all open source except an implementation of a Restricted QuadTreeS library, libRQTS.so.
 We claim that libRQTS.so does not depend on any open source library or software except GNU C Library. 
