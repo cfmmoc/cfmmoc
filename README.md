@@ -14,8 +14,8 @@ cfMMOC library is a planet-scale out-of-core terrain rendering framework on top 
 
 | Build | Status |
 |-------|--------|
-| Fedora 64-bit | ![Building Pass](https://github.com/cfmmoc/cfmmoc-mics/blob/master/build-passing.png) |
-| Ubuntu 64-bit | ![Building Pass](https://github.com/cfmmoc/cfmmoc-mics/blob/master/build-passing.png) |
+| Fedora 27 64-bit | ![Building Pass](https://github.com/cfmmoc/cfmmoc-mics/blob/master/build-passing.png) |
+| Ubuntu 17.10 64-bit | ![Building Pass](https://github.com/cfmmoc/cfmmoc-mics/blob/master/build-passing.png) |
 
 ## Features
 
@@ -51,8 +51,9 @@ Install the following dependences (given versions are not mandatory) for cfMMOC:
 
 In addtion, OGRE is also a dependency for cfMMOC, headers and binary of OGRE v1.9 is included in this repository. 
 For compiling binary of OGRE, please refers to https://github.com/OGRECave/ogre. 
-Dependencies for cfMMOC are all open source except an implementation of a Restricted QuadTreeS library, libRQTS.so.
+ORGE should be compiled with multithreading support with config OGRE_THREAD_SUPPORT = 2 and OGRE_THREAD_PROVIDER = 2 (i.e., POCO libraries as thread provider).
 
+Dependencies for cfMMOC are all open source except an implementation of a Restricted QuadTreeS library, libRQTS.so.
 We claim that libRQTS.so does not depend on any open source library or software except GNU C Library. 
 None of libRQTS's dependency requires libRQTS to be an open source library. 
 We CURRENTLY do not make libRQTS as an open source due to intellectual property issues.
