@@ -99,7 +99,7 @@ installation on the following systems:
 
 Install pre-requisites for run-time:
 
-    sudo apt install libatomic1 libois-1.3.0v5 libpocofoundation48
+	sudo apt install libatomic1 libois-1.3.0v5 libpocofoundation48
 
 Install pre-requisites for compiling:
 
