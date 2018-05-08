@@ -99,11 +99,11 @@ installation on the following systems:
 
 Install pre-requisites for run-time:
 
-    sudo apt install libzzip-0-13 libatomic1 libois-1.3.0v5 libfreeimage3 libpocofoundation48
+    sudo apt install libatomic1 libois-1.3.0v5 libpocofoundation48
 
 Install pre-requisites for compiling:
 
-	sudo apt install make g++ libpoco-dev libois-dev libcurl3-dev
+	sudo apt install make g++ libpoco-dev libois-dev libcurl3-dev libzzip-0-13 libfreeimage3
 
 ## Running cfMMOC:
 
@@ -113,7 +113,19 @@ Run `./cfMMOC` in terminal, and then select cfMMOC-back.
 
 Run `./cfMMOC` in a new terminal, and then select cfMMOC-fore, 1280x700 resolution is used as default in cfMMOC-fore, you could change it in `frender.cpp`.
 
-As `./cfMMOC` runs for the first time, do not select full screen mode in configuration dialog, and 800x600 (or lower) resolution is recommended.
+As `./cfMMOC` runs for the first time, do not select full screen mode in configuration dialog, and 800x600 (or lower) resolution is recommended. You could also change that in file `/home/user/.ogre/Ghadamon/ogre.cfg`. Sample of `ogre.fgg` is
+
+	Render System=OpenGL Rendering Subsystem
+
+	[OpenGL Rendering Subsystem]
+	Display Frequency=60 Hz
+	FSAA=0
+	Fixed Pipeline Enabled=Yes
+	Full Screen=No
+	RTT Preferred Mode=FBO
+	VSync=No
+	Video Mode=800 x 600
+	sRGB Gamma Conversion=No
 
 If `./cfMMOC` returns `./cfMMOC: error while loading shared libraries: libOgreMain.so.1.9.0: cannot open shared object file: No such file or directory` or similar error, please run `./cfMMOC` as `LD_PRELOAD=./libOgreMain.so.1.9.0:./libOgreOverlay.so.1.9.0 ./cfMMOC`.
 
