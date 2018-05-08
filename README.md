@@ -6,7 +6,6 @@ Any modification, re-utilization or copy of the source or binary format in other
 Copyright (c) 2016-2018 by Authors (Jin Yan, Guanghong Gong, Ni Li and Luhao Xiao)
 
 
-
 ## Overview
 cfMMOC represents a consolidated framework of multi-resolution management and occlusion culling.
 
@@ -16,6 +15,7 @@ cfMMOC library is a planet-scale out-of-core terrain rendering framework on top 
 |-------|--------|
 | Fedora 27 64-bit | ![Building Pass](https://github.com/cfmmoc/cfmmoc-mics/blob/master/build-passing.png) |
 | Ubuntu 17.10 64-bit | ![Building Pass](https://github.com/cfmmoc/cfmmoc-mics/blob/master/build-passing.png) |
+
 
 ## Features
 
@@ -27,14 +27,12 @@ cfMMOC library is a planet-scale out-of-core terrain rendering framework on top 
  * Data fetching over networks
 
 
-
 ## Screenshot and Video
 ![screenshot](https://raw.githubusercontent.com/cfmmoc/cfmmoc/master/SNAP.png)
 
 A demo video could be found at https://github.com/cfmmoc/cfmmoc-mics/blob/master/cfMMOC-short.mp4?raw=true.
 
 A longer version of video is here: https://www.youtube.com/watch?v=8BmP0gtMc1M.
-
 
 
 ## Run-time Prerequisites
@@ -53,6 +51,7 @@ In addtion, OGRE and libRQTS are also dependencies for cfMMOC, headers and binar
 For compiling binary of OGRE, please refers to https://github.com/OGRECave/ogre. 
 ORGE should be compiled with multithreading support by configuring OGRE_THREAD_SUPPORT = 2 and OGRE_THREAD_PROVIDER = 2 (i.e., using POCO libraries as thread provider).
 Source and compilation guide of libRQTS could be found at https://github.com/cfmmoc/libRQTS.
+
 
 ## Compilation
 Install compiler and dependences (given versions are not mandatory) for building cfMMOC:
@@ -87,7 +86,6 @@ Running `make install -f ../Makefile`, will copy the binary file to the `bin/` d
 Datasets can be downloaded from: https://github.com/cfmmoc/cfmmoc-dataset-ll
 
 
-
 ## System Specific Installation Instructions
 
 Fedora is recommendation system for compiling and running cfMMOC.
@@ -99,11 +97,12 @@ installation on the following systems:
 
 Install pre-requisites for run-time:
 
-	sudo apt install libatomic1 libois-1.3.0v5 libpocofoundation48
+	apt install libatomic1 libois-1.3.0v5 libpocofoundation48
 
 Install pre-requisites for compiling:
 
-	sudo apt install make g++ libpoco-dev libois-dev libcurl3-dev libzzip-0-13 libfreeimage3
+	apt install make g++ libpoco-dev libois-dev libcurl3-dev libzzip-0-13 libfreeimage3
+
 
 ## Running cfMMOC:
 
@@ -128,6 +127,7 @@ As `./cfMMOC` runs for the first time, do not select full screen mode in configu
 	sRGB Gamma Conversion=No
 
 If `./cfMMOC` returns `./cfMMOC: error while loading shared libraries: libOgreMain.so.1.9.0: cannot open shared object file: No such file or directory` or similar error, please run `./cfMMOC` as `LD_PRELOAD=./libOgreMain.so.1.9.0:./libOgreOverlay.so.1.9.0 ./cfMMOC`.
+
 
 ## Configuration
 
