@@ -112,11 +112,7 @@ Install pre-requisites for compiling:
 
 Change directory to bin/ using `cd bin/`.
 
-Run `./cfMMOC` in terminal, and then select cfMMOC-back, 384x210 resolution is used as default in cfMMOC-back, if it is incorrect, see Troubleshooting section.
-
-Run `./cfMMOC` in a new terminal, and then select cfMMOC-fore, 1280x700 resolution is used as default in cfMMOC-fore, you could change it in `frender.cpp`.
-
-As `./cfMMOC` runs for the first time, do not select full screen mode in configuration dialog, and 800x600 (or lower) resolution is recommended. You could also change that in file `/home/user/.ogre/Ghadamon/ogre.cfg`. Sample of `ogre.cfg` is
+NOTE: As `./cfMMOC` runs for the first time, do not select full screen mode in configuration dialog, and select video mode to be a value lower than screen resolution. You could also change that in file `/home/user/.ogre/Ghadamon/ogre.cfg`. Sample of `ogre.cfg` is
 
 	Render System=OpenGL Rendering Subsystem
 
@@ -129,6 +125,10 @@ As `./cfMMOC` runs for the first time, do not select full screen mode in configu
 	VSync=No
 	Video Mode=800 x 600
 	sRGB Gamma Conversion=No
+
+Run `./cfMMOC` in terminal, and then select cfMMOC-back, 384x210 resolution is used as default in cfMMOC-back, if it is incorrect, see Troubleshooting section.
+
+Run `./cfMMOC` in a new terminal, and then select cfMMOC-fore, 1280x700 resolution is used as default in cfMMOC-fore, you could change it in `frender.cpp`.
 
 
 ## Configuration
