@@ -60,6 +60,10 @@ Install compiler and dependences (given versions are not mandatory) for building
  * `poco-devel-1.7.8p3-2.fc27.x86_64`
  * `ois-devel-1.3.0-14.fc27.x86_64`
  * `libcurl-devel-7.55.1-8.fc27.x86_64`
+ * `freeimage-3.17.0-12.fc27.x86_64`	(also for compiling)
+ * `zziplib-0.13.62-10.fc27.x86_64`	(also for compiling)
+ * `libatomic-7.2.1-2.fc27.x86_64`	(also for compiling)
+ * `libXaw-1.0.13-7.fc27.x86_64`	(also for compiling)
 
 Download the source (https://github.com/cfmmoc/cfmmoc/archive/master.zip), extract it.
 
@@ -108,11 +112,11 @@ Install pre-requisites for compiling:
 
 Change directory to bin/ using `cd bin/`.
 
-Run `./cfMMOC` in terminal, and then select cfMMOC-back.
+Run `./cfMMOC` in terminal, and then select cfMMOC-back, 384x210 resolution is used as default in cfMMOC-back, if it is incorrect, see Troubleshooting section.
 
 Run `./cfMMOC` in a new terminal, and then select cfMMOC-fore, 1280x700 resolution is used as default in cfMMOC-fore, you could change it in `frender.cpp`.
 
-As `./cfMMOC` runs for the first time, do not select full screen mode in configuration dialog, and 800x600 (or lower) resolution is recommended. You could also change that in file `/home/user/.ogre/Ghadamon/ogre.cfg`. Sample of `ogre.fgg` is
+As `./cfMMOC` runs for the first time, do not select full screen mode in configuration dialog, and 800x600 (or lower) resolution is recommended. You could also change that in file `/home/user/.ogre/Ghadamon/ogre.cfg`. Sample of `ogre.cfg` is
 
 	Render System=OpenGL Rendering Subsystem
 
@@ -125,8 +129,6 @@ As `./cfMMOC` runs for the first time, do not select full screen mode in configu
 	VSync=No
 	Video Mode=800 x 600
 	sRGB Gamma Conversion=No
-
-If `./cfMMOC` returns `./cfMMOC: error while loading shared libraries: libOgreMain.so.1.9.0: cannot open shared object file: No such file or directory` or similar error, please run `./cfMMOC` as `LD_PRELOAD=./libOgreMain.so.1.9.0:./libOgreOverlay.so.1.9.0 ./cfMMOC`.
 
 
 ## Configuration
@@ -147,5 +149,9 @@ Then, run `./cfMMOC` command again, and select cfMMOC-fore sample to run.
 ## Troubleshooting
 
 If terrain tiles are not renderred in either back-end process or fore-end process --> check resource directory starting with `cURL=http://` in `bin/resources.cfg`, access file http://localhost/com/u/s/s/t.mesh via web browser to check server accessibility. Note that a trailing slash (`/`) is required at the end of that resource directory line.
+
+If `./cfMMOC` returns `./cfMMOC: error while loading shared libraries: libOgreMain.so.1.9.0: cannot open shared object file: No such file or directory` or similar error, please run `./cfMMOC` as `LD_PRELOAD=./libOgreMain.so.1.9.0:./libOgreOverlay.so.1.9.0 ./cfMMOC`.
+
+If `cfMMOC-back` runs in incorrect resolution (384x210 is correct by default), then edit `ogre.cfg` in `/home/user/.ogre/Ghadamon/` directory (see Running cfMMOC section).
 
 If other problem occurs, post an issue at https://github.com/cfmmoc/cfmmoc/issues/new.
